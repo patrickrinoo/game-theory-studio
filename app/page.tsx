@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
@@ -27,12 +27,17 @@ import { TestChart } from "@/components/charts/test-chart"
 import { MonteCarloEngine } from "@/lib/monte-carlo-engine"
 import { GameTheoryUtils } from "@/lib/game-theory-utils"
 import { GameScenario, GameType, StrategyType, PlayerBehavior } from "@/lib/game-theory-types"
-import { Play, BarChart3, Settings, Trophy, TrendingUp, GraduationCap, Zap, Bot, Wrench, Sparkles, Target } from "lucide-react"
+import { Play, BarChart3, Settings, Trophy, TrendingUp, GraduationCap, Zap, Bot, Wrench, Sparkles, Target, Library, HelpCircle, BookOpen } from "lucide-react"
 import { LoadingSpinner, SimulationLoader, LoadingOverlay } from "@/components/ui/loading-spinner"
 import { ErrorBoundary, ErrorDisplay } from "@/components/ui/error-boundary"
 import { ResponsiveContainer, ResponsiveGrid, ResponsiveButtonStack } from "@/components/ui/responsive-layout"
 import { Button } from "@/components/ui/button"
 import ExportManager, { ShareableResultData } from '@/lib/export-manager'
+import { ScenarioLibraryComponent } from "@/components/scenario-library"
+import { ScenarioLibraryItem } from "@/lib/scenario-library"
+import { TutorialSystem, useTutorialSystem } from "@/components/tutorial-system"
+import { HelpPanel } from "@/components/help-panel"
+import { ConceptText, ConceptIcon } from "@/components/ui/educational-tooltip"
 
 // UI-specific interface for game scenarios (matching the one in GameSelector)
 interface UIGameScenario {
@@ -81,6 +86,8 @@ export default function GameTheorySimulator() {
   const [simulationHistory, setSimulationHistory] = useState<SimulationResult[]>([])
   const [showWelcome, setShowWelcome] = useState(true)
   const [sharedResult, setSharedResult] = useState<ShareableResultData | null>(null)
+  const tutorialSystem = useTutorialSystem()
+  const [showFirstTimeHelp, setShowFirstTimeHelp] = useState(false)
 
   // Convert UI game scenario to proper GameScenario format
   const convertToGameScenario = (uiGame: UIGameScenario): GameScenario => {
@@ -321,12 +328,25 @@ export default function GameTheorySimulator() {
             <Button 
               variant="outline" 
               size="lg"
+              onClick={() => tutorialSystem.openTutorial('introduction-to-game-theory')}
               className="border-2 border-gray-300 hover:border-gray-400 px-8 py-4 rounded-2xl transition-all duration-300"
             >
-              Learn More
+              <BookOpen className="w-5 h-5 mr-2" />
+              Start Tutorial
             </Button>
           </ResponsiveButtonStack>
         </ResponsiveContainer>
+
+        {/* Tutorial System */}
+        {tutorialSystem.isOpen && (
+          <div className="fixed inset-0 z-50">
+            <TutorialSystem
+              isOpen={tutorialSystem.isOpen}
+              onClose={() => tutorialSystem.closeTutorial()}
+              tutorialId={tutorialSystem.tutorialId}
+            />
+          </div>
+        )}
       </div>
     )
   }
@@ -370,7 +390,7 @@ export default function GameTheorySimulator() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-8 bg-white/70 backdrop-blur-xl border border-white/20 shadow-lg rounded-2xl p-1">
+          <TabsList className="grid w-full grid-cols-9 bg-white/70 backdrop-blur-xl border border-white/20 shadow-lg rounded-2xl p-1">
             <TabsTrigger 
               value="setup" 
               className="flex items-center gap-2 rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-md transition-all duration-200"
@@ -427,7 +447,30 @@ export default function GameTheorySimulator() {
               <Wrench className="w-4 h-4" />
               <span className="hidden sm:inline">Builder</span>
             </TabsTrigger>
+            <TabsTrigger 
+              value="library" 
+              className="flex items-center gap-2 rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-md transition-all duration-200"
+            >
+              <Library className="w-4 h-4" />
+              <span className="hidden sm:inline">Library</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="help" 
+              className="flex items-center gap-2 rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-md transition-all duration-200"
+            >
+              <HelpCircle className="w-4 h-4" />
+              <span className="hidden sm:inline">Help</span>
+            </TabsTrigger>
           </TabsList>
+
+          {/* Contextual Help Panel - shows contextual help for current tab */}
+          <div className="mb-4">
+            <HelpPanel 
+              gameType={selectedGame?.category as any}
+              context={activeTab as any}
+              className="bg-white/70 backdrop-blur-xl border border-white/20 shadow-lg rounded-2xl"
+            />
+          </div>
 
           <TabsContent value="setup" className="space-y-6">
             <ErrorBoundary>
@@ -689,6 +732,131 @@ export default function GameTheorySimulator() {
 
           <TabsContent value="builder" className="space-y-6">
             <CustomGameBuilder onGameCreated={handleGameSelect} />
+          </TabsContent>
+
+          <TabsContent value="library" className="space-y-6">
+            <ScenarioLibraryComponent 
+              onLoadScenario={(scenario: ScenarioLibraryItem) => {
+                // Convert ScenarioLibraryItem to UIGameScenario
+                const uiGame: UIGameScenario = {
+                  id: scenario.id,
+                  name: scenario.name,
+                  description: scenario.description,
+                  playerCount: scenario.payoffMatrix.players,
+                  strategies: scenario.payoffMatrix.strategies.map(s => s.name),
+                  category: scenario.category,
+                  difficulty: scenario.difficulty === 'beginner' ? 'Beginner' : 
+                            scenario.difficulty === 'intermediate' ? 'Intermediate' : 'Advanced',
+                  payoffMatrix: scenario.payoffMatrix.payoffs,
+                  realWorldApplications: scenario.realWorldExample ? [scenario.realWorldExample] : [],
+                  educationalFocus: [],
+                  learningObjectives: [],
+                  nashEquilibria: [],
+                  dominantStrategies: []
+                }
+                handleGameSelect(uiGame)
+                setActiveTab('setup') // Switch to setup tab after loading
+              }}
+              onCreateNew={() => {
+                setActiveTab('builder') // Switch to builder tab for creating new scenarios
+              }}
+            />
+          </TabsContent>
+
+          <TabsContent value="help" className="space-y-6">
+            <Card className="bg-white/70 backdrop-blur-xl border-white/20 shadow-xl">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <HelpCircle className="w-5 h-5 text-blue-500" />
+                  Help & Educational Resources
+                </CardTitle>
+                <CardDescription>
+                  Comprehensive guides, tutorials, and educational content for game theory concepts
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Tutorial Section */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <BookOpen className="w-5 h-5" />
+                        Interactive Tutorials
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm text-gray-600 mb-4">
+                        Step-by-step guided tutorials to learn game theory concepts and platform features.
+                      </p>
+                      <Button 
+                        onClick={() => tutorialSystem.openTutorial('introduction-to-game-theory')}
+                        className="w-full"
+                      >
+                        Start Learning
+                      </Button>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <ConceptIcon concept="nash-equilibrium" size="sm" />
+                        Game Theory Concepts
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <p className="text-sm text-gray-600 mb-3">
+                        Learn key concepts with interactive examples:
+                      </p>
+                      <div className="space-y-2">
+                        <ConceptText concept="nash-equilibrium" className="block text-sm" />
+                        <ConceptText concept="dominant-strategy" className="block text-sm" />
+                        <ConceptText concept="mixed-strategy" className="block text-sm" />
+                        <ConceptText concept="pareto-efficiency" className="block text-sm" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Platform Guide */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Platform Guide</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="text-center">
+                        <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mx-auto mb-3">
+                          <Settings className="w-6 h-6 text-blue-600" />
+                        </div>
+                        <h4 className="font-medium text-sm mb-2">Setup Games</h4>
+                        <p className="text-xs text-gray-600">Configure payoff matrices, player strategies, and game parameters</p>
+                      </div>
+                      <div className="text-center">
+                        <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mx-auto mb-3">
+                          <Play className="w-6 h-6 text-green-600" />
+                        </div>
+                        <h4 className="font-medium text-sm mb-2">Run Simulations</h4>
+                        <p className="text-xs text-gray-600">Execute Monte Carlo simulations with customizable parameters</p>
+                      </div>
+                      <div className="text-center">
+                        <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mx-auto mb-3">
+                          <BarChart3 className="w-6 h-6 text-purple-600" />
+                        </div>
+                        <h4 className="font-medium text-sm mb-2">Analyze Results</h4>
+                        <p className="text-xs text-gray-600">Interpret outcomes, find equilibria, and understand strategic dynamics</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Contextual Help Panel */}
+                <HelpPanel 
+                  gameType={selectedGame?.category as any}
+                  context={activeTab as any}
+                />
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </ResponsiveContainer>

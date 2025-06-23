@@ -29,8 +29,17 @@
     "test:watch": "vitest --watch",
     "test:integration": "vitest run __tests__/integration.test.ts",
     "test:performance": "vitest run __tests__/performance.test.ts",
-    "test:e2e": "vitest run __tests__/e2e-simulation.test.ts",
-    "test:unit": "vitest run __tests__/**/*.test.ts --exclude __tests__/integration.test.ts --exclude __tests__/performance.test.ts --exclude __tests__/e2e-simulation.test.ts"
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:debug": "playwright test --debug",
+    "test:unit": "vitest run __tests__/**/*.test.ts --exclude __tests__/integration.test.ts --exclude __tests__/performance.test.ts --exclude __tests__/e2e-simulation.test.ts",
+    "build:analyze": "cross-env ANALYZE=true npm run build",
+    "build:prod": "cross-env NODE_ENV=production npm run build",
+    "start:prod": "cross-env NODE_ENV=production npm start",
+    "deploy:vercel": "vercel --prod",
+    "deploy:preview": "vercel",
+    "postbuild": "echo 'Build completed successfully'",
+    "analyze": "cross-env ANALYZE=true npm run build"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
@@ -90,6 +99,7 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.53.1",
     "@testing-library/jest-dom": "^6.0.0",
     "@testing-library/react": "^14.0.0",
     "@testing-library/user-event": "^14.0.0",
@@ -99,6 +109,7 @@
     "@vitejs/plugin-react": "^4.6.0",
     "@vitest/coverage-v8": "^1.0.0",
     "@vitest/ui": "^1.0.0",
+    "cross-env": "^7.0.3",
     "eslint": "^8",
     "eslint-config-next": "14.0.0",
     "jsdom": "^23.2.0",

@@ -5,8 +5,10 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { useState } from "react"
-import type { GameScenario } from "@/app/page"
-import { GraduationCap, BookOpen, CheckCircle, ArrowRight, Lightbulb, Target, Users, Brain, Star } from "lucide-react"
+import type { GameScenario } from "@/lib/game-theory-types"
+import { GraduationCap, BookOpen, CheckCircle, ArrowRight, Lightbulb, Target, Users, Brain, Star, HelpCircle } from "lucide-react"
+import { ConceptText, ConceptBadge, ConceptIcon } from "@/components/ui/educational-tooltip"
+import { TutorialSystem, useTutorialSystem } from "@/components/tutorial-system"
 
 interface LearningModule {
   id: string
@@ -98,6 +100,7 @@ export function LearningMode({ onGameSelect }: LearningModeProps) {
   const [selectedModule, setSelectedModule] = useState<LearningModule | null>(null)
   const [progress, setProgress] = useState(0)
   const [completedModules, setCompletedModules] = useState<Set<string>>(new Set())
+  const tutorialSystem = useTutorialSystem()
 
   const startModule = (module: LearningModule) => {
     setSelectedModule(module)

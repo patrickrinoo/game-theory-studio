@@ -1,15 +1,69 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuites name="vitest tests" tests="5" failures="0" errors="0" time="2.747">
-    <testsuite name="__tests__/export-functionality.test.ts" timestamp="2025-06-23T11:55:37.817Z" hostname="rino" tests="5" failures="0" errors="0" skipped="0" time="0.008">
-        <testcase classname="__tests__/export-functionality.test.ts" name="Export Functionality - Task 11 &gt; should export results as CSV files" time="0.004">
+<testsuites name="vitest tests" tests="28" failures="1" errors="0" time="2.977">
+    <testsuite name="__tests__/scenario-library.test.ts" timestamp="2025-06-23T12:35:56.485Z" hostname="rino" tests="28" failures="1" errors="0" skipped="0" time="0.05">
+        <testcase classname="__tests__/scenario-library.test.ts" name="ScenarioLibrary &gt; Singleton Pattern &gt; should return the same instance" time="0.005">
         </testcase>
-        <testcase classname="__tests__/export-functionality.test.ts" name="Export Functionality - Task 11 &gt; should export results as Excel files" time="0.001">
+        <testcase classname="__tests__/scenario-library.test.ts" name="ScenarioLibrary &gt; Preset Scenarios &gt; should initialize with preset scenarios" time="0.001">
         </testcase>
-        <testcase classname="__tests__/export-functionality.test.ts" name="Export Functionality - Task 11 &gt; should create shareable URLs" time="0">
+        <testcase classname="__tests__/scenario-library.test.ts" name="ScenarioLibrary &gt; Preset Scenarios &gt; should have proper categories for preset scenarios" time="0.003">
         </testcase>
-        <testcase classname="__tests__/export-functionality.test.ts" name="Export Functionality - Task 11 &gt; should export images in multiple formats" time="0">
+        <testcase classname="__tests__/scenario-library.test.ts" name="ScenarioLibrary &gt; Preset Scenarios &gt; should have Prisoner&apos;s Dilemma preset" time="0.001">
         </testcase>
-        <testcase classname="__tests__/export-functionality.test.ts" name="Export Functionality - Task 11 &gt; should generate comprehensive reports" time="0.001">
+        <testcase classname="__tests__/scenario-library.test.ts" name="ScenarioLibrary &gt; Preset Scenarios &gt; should not allow deletion of preset scenarios" time="0">
+        </testcase>
+        <testcase classname="__tests__/scenario-library.test.ts" name="ScenarioLibrary &gt; Custom Scenarios &gt; should save custom scenarios" time="0.001">
+        </testcase>
+        <testcase classname="__tests__/scenario-library.test.ts" name="ScenarioLibrary &gt; Custom Scenarios &gt; should allow deletion of custom scenarios" time="0.001">
+        </testcase>
+        <testcase classname="__tests__/scenario-library.test.ts" name="ScenarioLibrary &gt; Custom Scenarios &gt; should update custom scenarios" time="0.001">
+        </testcase>
+        <testcase classname="__tests__/scenario-library.test.ts" name="ScenarioLibrary &gt; Custom Scenarios &gt; should not allow updates to preset scenarios" time="0.001">
+        </testcase>
+        <testcase classname="__tests__/scenario-library.test.ts" name="ScenarioLibrary &gt; Filtering and Search &gt; should filter by category" time="0.001">
+        </testcase>
+        <testcase classname="__tests__/scenario-library.test.ts" name="ScenarioLibrary &gt; Filtering and Search &gt; should filter by difficulty" time="0.002">
+        </testcase>
+        <testcase classname="__tests__/scenario-library.test.ts" name="ScenarioLibrary &gt; Filtering and Search &gt; should filter by preset status" time="0.002">
+        </testcase>
+        <testcase classname="__tests__/scenario-library.test.ts" name="ScenarioLibrary &gt; Filtering and Search &gt; should search by name and description" time="0.002">
+        </testcase>
+        <testcase classname="__tests__/scenario-library.test.ts" name="ScenarioLibrary &gt; Filtering and Search &gt; should filter by tags" time="0.001">
+        </testcase>
+        <testcase classname="__tests__/scenario-library.test.ts" name="ScenarioLibrary &gt; Filtering and Search &gt; should combine multiple filters" time="0.002">
+        </testcase>
+        <testcase classname="__tests__/scenario-library.test.ts" name="ScenarioLibrary &gt; Usage Statistics &gt; should track scenario usage" time="0.001">
+        </testcase>
+        <testcase classname="__tests__/scenario-library.test.ts" name="ScenarioLibrary &gt; Usage Statistics &gt; should update last used timestamp" time="0.001">
+        </testcase>
+        <testcase classname="__tests__/scenario-library.test.ts" name="ScenarioLibrary &gt; Usage Statistics &gt; should provide library statistics" time="0">
+        </testcase>
+        <testcase classname="__tests__/scenario-library.test.ts" name="ScenarioLibrary &gt; Import/Export &gt; should export custom scenarios only" time="0.001">
+        </testcase>
+        <testcase classname="__tests__/scenario-library.test.ts" name="ScenarioLibrary &gt; Import/Export &gt; should export all scenarios when requested" time="0.001">
+        </testcase>
+        <testcase classname="__tests__/scenario-library.test.ts" name="ScenarioLibrary &gt; Import/Export &gt; should import scenarios successfully" time="0.012">
+            <failure message="a.lastUsed.getTime is not a function" type="TypeError">
+TypeError: a.lastUsed.getTime is not a function
+ ❯ lib/scenario-library.ts:330:71
+ ❯ ScenarioLibrary.getScenarios lib/scenario-library.ts:330:22
+ ❯ __tests__/scenario-library.test.ts:345:36
+            </failure>
+        </testcase>
+        <testcase classname="__tests__/scenario-library.test.ts" name="ScenarioLibrary &gt; Import/Export &gt; should handle invalid import data" time="0">
+        </testcase>
+        <testcase classname="__tests__/scenario-library.test.ts" name="ScenarioLibrary &gt; Import/Export &gt; should validate imported scenarios" time="0.001">
+        </testcase>
+        <testcase classname="__tests__/scenario-library.test.ts" name="ScenarioLibrary &gt; Storage Integration &gt; should save to localStorage when scenarios are modified" time="0.003">
+        </testcase>
+        <testcase classname="__tests__/scenario-library.test.ts" name="ScenarioLibrary &gt; Storage Integration &gt; should handle storage errors gracefully" time="0.001">
+        </testcase>
+        <testcase classname="__tests__/scenario-library.test.ts" name="ScenarioLibrary &gt; Category Management &gt; should have all required scenario categories" time="0.001">
+        </testcase>
+        <testcase classname="__tests__/scenario-library.test.ts" name="ScenarioLibrary &gt; Category Management &gt; should get scenarios by category" time="0.001">
+        </testcase>
+        <testcase classname="__tests__/scenario-library.test.ts" name="ScenarioLibrary &gt; Cleanup Operations &gt; should clear custom scenarios while preserving presets" time="0.001">
         </testcase>
     </testsuite>
+</testsuites>
+>
 </testsuites>
