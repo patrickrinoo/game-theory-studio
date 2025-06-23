@@ -387,14 +387,82 @@
         "id": 8,
         "title": "Simulation Controls Interface",
         "description": "Build the UI for configuring and running simulations",
-        "status": "pending",
+        "status": "in-progress",
         "priority": "medium",
         "dependencies": [
           3,
           4
         ],
         "details": "Create controls for setting iteration count, player strategies, and simulation parameters. Implement start/stop/pause functionality with progress indicators. Add real-time feedback during simulation execution and result preview capabilities.",
-        "testStrategy": "Test simulation control workflow, progress tracking, and user interaction during long-running simulations."
+        "testStrategy": "Test simulation control workflow, progress tracking, and user interaction during long-running simulations.",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Simulation Control Panel Component",
+            "description": "Create the main simulation control panel component with start/stop/pause buttons and progress indicators",
+            "details": "Build a comprehensive control panel that integrates with the existing simulation-parameters.tsx component and monte-carlo-engine.ts. Include buttons for start, stop, pause/resume simulation, progress bars, current iteration display, and simulation status indicators.",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 8
+          },
+          {
+            "id": 2,
+            "title": "Real-time Progress Monitoring",
+            "description": "Implement real-time progress tracking and performance metrics display during simulation execution",
+            "details": "Create components that show real-time simulation progress, including iteration count, elapsed time, estimated time remaining, convergence indicators, and performance metrics. Integrate with the existing performance dashboard components.",
+            "status": "done",
+            "dependencies": [
+              "8.1"
+            ],
+            "parentTaskId": 8
+          },
+          {
+            "id": 3,
+            "title": "Simulation State Management",
+            "description": "Implement state management for simulation execution, pause/resume functionality, and results caching",
+            "details": "Create a robust state management system that handles simulation lifecycle (idle, running, paused, completed, error states), manages simulation data persistence, handles pause/resume functionality, and provides clean simulation reset capabilities.",
+            "status": "done",
+            "dependencies": [
+              "8.1"
+            ],
+            "parentTaskId": 8
+          },
+          {
+            "id": 4,
+            "title": "Batch Simulation Management",
+            "description": "Implement functionality to run multiple simulations with different parameters and compare results",
+            "details": "Create interface for setting up batch simulations with parameter variations, queue management for multiple simulation runs, comparison views for batch results, and export capabilities for batch analysis. Integrate with existing configuration management.",
+            "status": "in-progress",
+            "dependencies": [
+              "8.2",
+              "8.3"
+            ],
+            "parentTaskId": 8
+          },
+          {
+            "id": 5,
+            "title": "Results Preview and Feedback",
+            "description": "Create real-time results preview and user feedback components during simulation execution",
+            "details": "Build components that show preliminary results as simulation progresses, convergence indicators, live charts integration, user feedback systems for simulation quality, and quick action buttons for simulation adjustments. Connect with existing visualization dashboard.",
+            "status": "done",
+            "dependencies": [
+              "8.2"
+            ],
+            "parentTaskId": 8
+          },
+          {
+            "id": 6,
+            "title": "Integration with Existing Components",
+            "description": "Integrate simulation controls with existing game configuration, visualization, and analysis components",
+            "details": "Ensure seamless integration between simulation controls and existing components: game-selector.tsx, payoff-matrix.tsx, simulation-parameters.tsx, visualization-dashboard.tsx, and strategic-analysis-dashboard.tsx. Create consistent data flow and user experience across the entire application.",
+            "status": "done",
+            "dependencies": [
+              "8.4",
+              "8.5"
+            ],
+            "parentTaskId": 8
+          }
+        ]
       },
       {
         "id": 9,
@@ -516,7 +584,7 @@
       "projectName": "Monte Carlo Game Theory Simulation",
       "description": "A web-based application for Monte Carlo simulations in game theory scenarios",
       "created": "2025-06-20T05:39:04.846Z",
-      "updated": "2025-06-22T23:17:13.424Z"
+      "updated": "2025-06-23T09:03:53.455Z"
     }
   }
 }

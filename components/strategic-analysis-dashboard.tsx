@@ -20,7 +20,7 @@ import { VisualizationDashboard } from '@/components/visualization-dashboard';
 
 // Import chart components for integrated analysis
 import { BestResponseChart } from '@/components/charts/best-response-chart';
-import { StrategicDominanceChart } from '@/components/charts/strategic-dominance-chart';
+import StrategicDominanceChart from '@/components/charts/strategic-dominance-chart';
 import { EnhancedNashChart } from '@/components/charts/enhanced-nash-chart';
 
 import { GameScenario } from '@/lib/game-theory-types';
@@ -145,7 +145,10 @@ export const StrategicAnalysisDashboard: React.FC<StrategicAnalysisDashboardProp
   const [showAdvanced, setShowAdvanced] = useState(false);
 
   // Initialize analyzers
-  const dominanceAnalyzer = useMemo(() => new DominanceAnalyzer(), []);
+  const dominanceAnalyzer = useMemo(() => {
+    if (!game?.payoffMatrix) return null;
+    return new DominanceAnalyzer(game.payoffMatrix);
+  }, [game?.payoffMatrix]);
   const mixedStrategySolver = useMemo(() => new MixedStrategySolver(), []);
 
   // Perform comprehensive strategic analysis
@@ -156,12 +159,8 @@ export const StrategicAnalysisDashboard: React.FC<StrategicAnalysisDashboardProp
     
     try {
       // Dominance Analysis
-      const dominanceResults = dominanceAnalyzer.analyzeDominance({
-        players: game.players.length,
-        strategies: game.payoffMatrix.strategies,
-        payoffs: payoffMatrix,
-        isSymmetric: false,
-      });
+      const dominanceResults = dominanceAnalyzer?.analyze();
+      if (!dominanceResults) return;
 
       // Nash Equilibrium Analysis
       const nashEquilibria = mixedStrategySolver.findMixedEquilibria({
@@ -175,21 +174,21 @@ export const StrategicAnalysisDashboard: React.FC<StrategicAnalysisDashboardProp
       const insights: AnalysisInsight[] = [];
 
       // Dominance insights
-      if (dominanceResults.strictlyDominant.length > 0) {
+      if (dominanceResults.strictlyDominantStrategies.length > 0) {
         insights.push({
           type: 'success',
           title: 'Strictly Dominant Strategies Found',
-          description: `Found ${dominanceResults.strictlyDominant.length} strictly dominant strategies that always perform better.`,
+          description: `Found ${dominanceResults.strictlyDominantStrategies.length} strictly dominant strategies that always perform better.`,
           actionable: true,
           recommendation: 'Players should always choose their dominant strategies when available.',
         });
       }
 
-      if (dominanceResults.weaklyDominant.length > 0) {
+      if (dominanceResults.weaklyDominantStrategies.length > 0) {
         insights.push({
           type: 'info',
           title: 'Weakly Dominant Strategies Identified',
-          description: `${dominanceResults.weaklyDominant.length} strategies perform at least as well as alternatives.`,
+          description: `${dominanceResults.weaklyDominantStrategies.length} strategies perform at least as well as alternatives.`,
           actionable: true,
           recommendation: 'Consider these strategies as safe choices, but watch for better opportunities.',
         });
