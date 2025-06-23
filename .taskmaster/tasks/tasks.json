@@ -387,7 +387,7 @@
         "id": 8,
         "title": "Simulation Controls Interface",
         "description": "Build the UI for configuring and running simulations",
-        "status": "in-progress",
+        "status": "done",
         "priority": "medium",
         "dependencies": [
           3,
@@ -432,7 +432,7 @@
             "title": "Batch Simulation Management",
             "description": "Implement functionality to run multiple simulations with different parameters and compare results",
             "details": "Create interface for setting up batch simulations with parameter variations, queue management for multiple simulation runs, comparison views for batch results, and export capabilities for batch analysis. Integrate with existing configuration management.",
-            "status": "in-progress",
+            "status": "done",
             "dependencies": [
               "8.2",
               "8.3"
@@ -584,7 +584,7 @@
       "projectName": "Monte Carlo Game Theory Simulation",
       "description": "A web-based application for Monte Carlo simulations in game theory scenarios",
       "created": "2025-06-20T05:39:04.846Z",
-      "updated": "2025-06-23T09:03:53.455Z"
+      "updated": "2025-06-23T09:12:07.961Z"
     }
   }
 }
