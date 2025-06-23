@@ -3,7 +3,10 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import type { SimulationResult, GameScenario } from "@/app/page"
+import { BestResponseChart } from "@/components/charts/best-response-chart"
+import { MixedStrategyCalculator } from "@/components/mixed-strategy-calculator"
+import type { GameScenario } from "@/lib/game-theory-types"
+import type { SimulationResult } from "@/app/page"
 import { TrendingUp, Target, AlertTriangle, CheckCircle } from "lucide-react"
 
 interface StrategyAnalysisProps {
@@ -39,7 +42,7 @@ export function StrategyAnalysis({ results, game, payoffMatrix }: StrategyAnalys
               <span className="font-medium">Player {playerIndex + 1}</span>
               <div className="flex gap-2">
                 <Badge variant="outline" className="bg-green-100">
-                  {game.strategies[strategyIndex]}
+                  {game.payoffMatrix.strategies[strategyIndex]?.name || `Strategy ${strategyIndex + 1}`}
                 </Badge>
                 <Badge variant="secondary">Payoff: {results.nashEquilibrium!.payoffs[playerIndex].toFixed(2)}</Badge>
               </div>
@@ -201,6 +204,29 @@ export function StrategyAnalysis({ results, game, payoffMatrix }: StrategyAnalys
               </Alert>
             ))}
           </div>
+        </div>
+
+        <div>
+          <h4 className="font-semibold mb-3">Best Response Analysis</h4>
+          <BestResponseChart
+            payoffMatrix={payoffMatrix}
+            strategies={game.payoffMatrix.strategies.map(s => s.name)}
+            interactive={true}
+            showIntersections={true}
+            className="mt-4"
+          />
+        </div>
+
+        <div>
+          <h4 className="font-semibold mb-3">Mixed Strategy Calculator</h4>
+          <MixedStrategyCalculator
+            game={game}
+            className="mt-4"
+            onStrategyChange={(config) => {
+              // Handle strategy configuration changes if needed
+              console.log('Mixed strategy configuration changed:', config);
+            }}
+          />
         </div>
 
         <div>

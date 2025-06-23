@@ -9,7 +9,14 @@
     "type": "git",
     "url": "https://github.com/PatrickRino/game-theory-studio.git"
   },
-  "keywords": ["game-theory", "monte-carlo", "simulation", "visualization", "strategy", "nash-equilibrium"],
+  "keywords": [
+    "game-theory",
+    "monte-carlo",
+    "simulation",
+    "visualization",
+    "strategy",
+    "nash-equilibrium"
+  ],
   "scripts": {
     "build": "next build",
     "dev": "next dev",

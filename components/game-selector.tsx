@@ -287,7 +287,7 @@ export function GameSelector({ onGameSelect, selectedGame }: GameSelectorProps) 
                   )}
 
                   {game.realWorldApplications && (
-                    <div className="text-xs text-gray-600 bg-gray-50/50 rounded-lg p-2">
+                  <div className="text-xs text-gray-600 bg-gray-50/50 rounded-lg p-2">
                       <strong>Real-world examples:</strong> {game.realWorldApplications.slice(0, 2).join(', ')}
                       {game.realWorldApplications.length > 2 && '...'}
                     </div>
@@ -297,7 +297,7 @@ export function GameSelector({ onGameSelect, selectedGame }: GameSelectorProps) 
                     <div className="text-xs text-green-700 bg-green-50/50 rounded-lg p-2 flex items-center gap-1">
                       <Target className="w-3 h-3" />
                       <strong>Nash Equilibria:</strong> {game.nashEquilibria.length} found
-                    </div>
+                  </div>
                   )}
                 </div>
               </div>

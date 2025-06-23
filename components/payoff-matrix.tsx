@@ -108,14 +108,14 @@ export function PayoffMatrix({ game, matrix, onMatrixChange }: PayoffMatrixProps
     const suggestions: string[] = []
     let isValid = true
 
-    if (!matrix[0]) {
+    if (!matrix || matrix.length === 0) {
       return { isValid: false, warnings: ['Matrix is not initialized'], suggestions: [] }
     }
 
     // Check for incomplete entries
     for (let i = 0; i < matrixSize; i++) {
       for (let j = 0; j < matrixSize; j++) {
-        if (!matrix[0][i] || !matrix[0][i][j] || matrix[0][i][j].some(val => isNaN(val))) {
+        if (!matrix[i] || !matrix[i][j] || !Array.isArray(matrix[i][j]) || matrix[i][j].some((val: number) => isNaN(val))) {
           warnings.push(`Incomplete payoff at position (${i+1}, ${j+1})`)
           isValid = false
         }
@@ -140,7 +140,7 @@ export function PayoffMatrix({ game, matrix, onMatrixChange }: PayoffMatrixProps
         let isZeroSum = true
         for (let i = 0; i < matrixSize && isZeroSum; i++) {
           for (let j = 0; j < matrixSize && isZeroSum; j++) {
-            if (matrix[0][i][j][0] + matrix[0][i][j][1] !== 0) {
+            if (matrix[i][j][0] + matrix[i][j][1] !== 0) {
               isZeroSum = false
             }
           }
@@ -161,7 +161,7 @@ export function PayoffMatrix({ game, matrix, onMatrixChange }: PayoffMatrixProps
 
   // Perform strategic analysis
   const analyzeStrategies = (): StrategicAnalysis => {
-    if (!matrix[0]) {
+    if (!matrix || matrix.length === 0) {
       return {
         nashEquilibria: [],
         dominantStrategies: [],
@@ -172,21 +172,21 @@ export function PayoffMatrix({ game, matrix, onMatrixChange }: PayoffMatrixProps
     }
 
     try {
-      const nashEquilibria = utils.findNashEquilibrium(matrix, game.strategies) || []
-      const dominantStrategies = utils.findDominantStrategies(matrix, game.strategies) || []
+      const nashEquilibria = utils.findNashEquilibrium([matrix], game.strategies) || []
+      const dominantStrategies = utils.findDominantStrategies([matrix], game.strategies) || []
       
       // Find Pareto optimal outcomes
       const pareto: { row: number; col: number; payoffs: number[] }[] = []
       for (let i = 0; i < matrixSize; i++) {
         for (let j = 0; j < matrixSize; j++) {
-          const currentPayoffs = matrix[0][i][j]
+          const currentPayoffs = matrix[i][j]
           let isPareto = true
           
           // Check if any other outcome dominates this one
           for (let x = 0; x < matrixSize && isPareto; x++) {
             for (let y = 0; y < matrixSize && isPareto; y++) {
               if (x === i && y === j) continue
-              const otherPayoffs = matrix[0][x][y]
+              const otherPayoffs = matrix[x][y]
               if (otherPayoffs[0] >= currentPayoffs[0] && otherPayoffs[1] >= currentPayoffs[1] &&
                   (otherPayoffs[0] > currentPayoffs[0] || otherPayoffs[1] > currentPayoffs[1])) {
                 isPareto = false
@@ -204,7 +204,7 @@ export function PayoffMatrix({ game, matrix, onMatrixChange }: PayoffMatrixProps
       let zeroSum = true
       for (let i = 0; i < matrixSize && zeroSum; i++) {
         for (let j = 0; j < matrixSize && zeroSum; j++) {
-          if (Math.abs(matrix[0][i][j][0] + matrix[0][i][j][1]) > 0.001) {
+          if (Math.abs(matrix[i][j][0] + matrix[i][j][1]) > 0.001) {
             zeroSum = false
           }
         }
@@ -214,8 +214,8 @@ export function PayoffMatrix({ game, matrix, onMatrixChange }: PayoffMatrixProps
       let symmetry = true
       for (let i = 0; i < matrixSize && symmetry; i++) {
         for (let j = 0; j < matrixSize && symmetry; j++) {
-          if (matrix[0][i][j][0] !== matrix[0][j][i][1] || 
-              matrix[0][i][j][1] !== matrix[0][j][i][0]) {
+          if (matrix[i][j][0] !== matrix[j][i][1] || 
+              matrix[i][j][1] !== matrix[j][i][0]) {
             symmetry = false
           }
         }
@@ -247,11 +247,10 @@ export function PayoffMatrix({ game, matrix, onMatrixChange }: PayoffMatrixProps
     if (isNaN(value)) return
     
     const newMatrix = [...matrix]
-    if (!newMatrix[0]) newMatrix[0] = []
-    if (!newMatrix[0][row]) newMatrix[0][row] = []
-    if (!newMatrix[0][row][col]) newMatrix[0][row][col] = [0, 0]
+    if (!newMatrix[row]) newMatrix[row] = []
+    if (!newMatrix[row][col]) newMatrix[row][col] = [0, 0]
     
-    newMatrix[0][row][col][player] = value
+    newMatrix[row][col][player] = value
     onMatrixChange(newMatrix)
     
     // Clear validation error for this cell
@@ -341,9 +340,9 @@ export function PayoffMatrix({ game, matrix, onMatrixChange }: PayoffMatrixProps
   return (
     <div className="space-y-6">
       <Card className="bg-white/70 backdrop-blur-xl border-white/20 shadow-xl">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div>
               <CardTitle className="flex items-center gap-2">
                 <Target className="w-5 h-5 text-blue-500" />
                 Dynamic Payoff Matrix Editor
@@ -351,7 +350,7 @@ export function PayoffMatrix({ game, matrix, onMatrixChange }: PayoffMatrixProps
               <CardDescription>
                 Customize payoffs and analyze strategic implications in real-time
               </CardDescription>
-            </div>
+          </div>
             <div className="flex items-center gap-2">
               <Button 
                 variant="outline" 
@@ -366,12 +365,12 @@ export function PayoffMatrix({ game, matrix, onMatrixChange }: PayoffMatrixProps
                 Random
               </Button>
               <Button variant="outline" size="sm" onClick={resetToDefault} className="bg-white/50">
-                <RotateCcw className="w-4 h-4 mr-2" />
-                Reset
-              </Button>
+            <RotateCcw className="w-4 h-4 mr-2" />
+            Reset
+          </Button>
             </div>
-          </div>
-        </CardHeader>
+        </div>
+      </CardHeader>
         <CardContent className="space-y-6">
           
           {/* Template Selection */}
@@ -408,15 +407,15 @@ export function PayoffMatrix({ game, matrix, onMatrixChange }: PayoffMatrixProps
           )}
 
           {/* Matrix Editor */}
-          <div className="space-y-4">
+        <div className="space-y-4">
             <div className="text-sm text-gray-600">
               Format: (Player 1 payoff, Player 2 payoff)
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse">
-                <thead>
-                  <tr>
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr>
                     <th className="border p-3 bg-gray-50 font-medium">
                       <div className="flex items-center gap-2">
                         <span>Player 1 \ Player 2</span>
@@ -426,13 +425,13 @@ export function PayoffMatrix({ game, matrix, onMatrixChange }: PayoffMatrixProps
                     {game.strategies.slice(0, matrixSize).map((strategy, index) => (
                       <th key={index} className="border p-3 bg-gray-50 font-medium">
                         {getStrategyBadge(strategy, index)}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
                   {game.strategies.slice(0, matrixSize).map((rowStrategy, row) => (
-                    <tr key={row}>
+                  <tr key={row}>
                       <td className="border p-3 bg-gray-50 font-medium">
                         {getStrategyBadge(rowStrategy, row)}
                       </td>
@@ -442,37 +441,37 @@ export function PayoffMatrix({ game, matrix, onMatrixChange }: PayoffMatrixProps
                             <div className="grid grid-cols-2 gap-2">
                               <div>
                                 <Label className="text-xs text-blue-600 font-medium">P1</Label>
-                                <Input
-                                  type="number"
+                              <Input
+                                type="number"
                                   step="0.1"
-                                  value={matrix[0]?.[row]?.[col]?.[0] || 0}
-                                  onChange={(e) => updatePayoff(row, col, 0, Number.parseFloat(e.target.value) || 0)}
-                                  className="h-8 text-sm"
-                                />
-                              </div>
+                                value={matrix[0]?.[row]?.[col]?.[0] || 0}
+                                onChange={(e) => updatePayoff(row, col, 0, Number.parseFloat(e.target.value) || 0)}
+                                className="h-8 text-sm"
+                              />
+                            </div>
                               <div>
                                 <Label className="text-xs text-red-600 font-medium">P2</Label>
-                                <Input
-                                  type="number"
+                              <Input
+                                type="number"
                                   step="0.1"
-                                  value={matrix[0]?.[row]?.[col]?.[1] || 0}
-                                  onChange={(e) => updatePayoff(row, col, 1, Number.parseFloat(e.target.value) || 0)}
-                                  className="h-8 text-sm"
-                                />
-                              </div>
-                            </div>
-                            <div className="text-xs text-center font-mono bg-gray-50 rounded px-2 py-1">
-                              ({matrix[0]?.[row]?.[col]?.[0] || 0}, {matrix[0]?.[row]?.[col]?.[1] || 0})
+                                value={matrix[0]?.[row]?.[col]?.[1] || 0}
+                                onChange={(e) => updatePayoff(row, col, 1, Number.parseFloat(e.target.value) || 0)}
+                                className="h-8 text-sm"
+                              />
                             </div>
                           </div>
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                            <div className="text-xs text-center font-mono bg-gray-50 rounded px-2 py-1">
+                            ({matrix[0]?.[row]?.[col]?.[0] || 0}, {matrix[0]?.[row]?.[col]?.[1] || 0})
+                          </div>
+                        </div>
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
+        </div>
 
           {/* Strategic Analysis */}
           {showAnalysis && (
@@ -561,8 +560,8 @@ export function PayoffMatrix({ game, matrix, onMatrixChange }: PayoffMatrixProps
               )}
             </div>
           )}
-        </CardContent>
-      </Card>
+      </CardContent>
+    </Card>
     </div>
   )
 }

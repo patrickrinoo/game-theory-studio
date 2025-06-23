@@ -11,12 +11,55 @@ import {
   StrategyType,
   GameType
 } from './game-theory-types'
+import { NashEquilibriumCalculator } from './nash-equilibrium-calculator'
 
 export class GameTheoryUtils {
+  private nashCalculator: NashEquilibriumCalculator
+
+  constructor() {
+    this.nashCalculator = new NashEquilibriumCalculator()
+  }
+
   /**
-   * Find Nash equilibria for a given game scenario
+   * Find Nash equilibria for a given game scenario (Enhanced version)
    */
   findNashEquilibria(scenario: GameScenario): NashEquilibrium[] {
+    // Use the enhanced Nash equilibrium calculator
+    return this.nashCalculator.findAllNashEquilibria(scenario)
+  }
+
+  /**
+   * Find validated Nash equilibria with comprehensive analysis
+   */
+  findValidatedNashEquilibria(scenario: GameScenario): Array<{
+    equilibrium: NashEquilibrium
+    validation: any
+  }> {
+    return this.nashCalculator.findValidatedEquilibria(scenario)
+  }
+
+  /**
+   * Get recommended Nash equilibria with quality analysis
+   */
+  getRecommendedNashEquilibria(scenario: GameScenario): Array<{
+    equilibrium: NashEquilibrium
+    validation: any
+    recommendation: string
+  }> {
+    return this.nashCalculator.getRecommendedEquilibria(scenario)
+  }
+
+  /**
+   * Validate a specific Nash equilibrium
+   */
+  validateEquilibrium(equilibrium: NashEquilibrium, payoffMatrix: PayoffMatrix): any {
+    return this.nashCalculator.validateEquilibrium(equilibrium, payoffMatrix)
+  }
+
+  /**
+   * Find Nash equilibria for a given game scenario (Legacy version)
+   */
+  findNashEquilibriaLegacy(scenario: GameScenario): NashEquilibrium[] {
     const { payoffMatrix } = scenario
     const equilibria: NashEquilibrium[] = []
 
@@ -350,7 +393,7 @@ export class GameTheoryUtils {
    */
   validateGameScenario(scenario: GameScenario): ValidationResult {
     const errors: ValidationError[] = []
-    const warnings: ValidationError[] = []
+    const warnings: any[] = []
 
     // Check basic structure
     if (!scenario.payoffMatrix || !scenario.players) {
@@ -382,7 +425,7 @@ export class GameTheoryUtils {
    */
   private validatePayoffMatrix(matrix: PayoffMatrix): ValidationResult {
     const errors: ValidationError[] = []
-    const warnings: ValidationError[] = []
+    const warnings: any[] = []
 
     if (!matrix.strategies || matrix.strategies.length < 2) {
       errors.push({

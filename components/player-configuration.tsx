@@ -137,6 +137,115 @@ const ADAPTIVE_STRATEGIES = {
   }
 }
 
+// Add specific game theory strategy templates
+const STRATEGY_TEMPLATES = {
+  'always-cooperate': {
+    name: "Always Cooperate",
+    description: "Always chooses the cooperative strategy",
+    icon: Heart,
+    color: "bg-green-500",
+    strategy: (strategies: string[]): PlayerStrategy => {
+      const cooperateIndex = strategies.findIndex(s => 
+        s.toLowerCase().includes('cooperate') || 
+        s.toLowerCase().includes('c') ||
+        s.toLowerCase() === 'stay' ||
+        s.toLowerCase() === 'dove'
+      )
+      return {
+        type: 'pure',
+        purStrategy: cooperateIndex >= 0 ? cooperateIndex : 0
+      }
+    }
+  },
+  'always-defect': {
+    name: "Always Defect",
+    description: "Always chooses the defection strategy",
+    icon: Zap,
+    color: "bg-red-500",
+    strategy: (strategies: string[]): PlayerStrategy => {
+      const defectIndex = strategies.findIndex(s => 
+        s.toLowerCase().includes('defect') || 
+        s.toLowerCase().includes('d') ||
+        s.toLowerCase() === 'switch' ||
+        s.toLowerCase() === 'hawk'
+      )
+      return {
+        type: 'pure',
+        purStrategy: defectIndex >= 0 ? defectIndex : (strategies.length > 1 ? 1 : 0)
+      }
+    }
+  },
+  'equal-mixed': {
+    name: "Equal Mixed",
+    description: "Equal probability for all strategies",
+    icon: Shuffle,
+    color: "bg-blue-500",
+    strategy: (strategies: string[]): PlayerStrategy => ({
+      type: 'mixed',
+      mixedProbabilities: new Array(strategies.length).fill(1 / strategies.length)
+    })
+  },
+  'cooperative-bias': {
+    name: "Cooperative Bias",
+    description: "70% cooperative, 30% other strategies",
+    icon: Heart,
+    color: "bg-green-400",
+    strategy: (strategies: string[]): PlayerStrategy => {
+      const cooperateIndex = strategies.findIndex(s => 
+        s.toLowerCase().includes('cooperate') || 
+        s.toLowerCase().includes('c') ||
+        s.toLowerCase() === 'stay' ||
+        s.toLowerCase() === 'dove'
+      )
+      const probs = new Array(strategies.length).fill(0.3 / (strategies.length - 1))
+      if (cooperateIndex >= 0) {
+        probs[cooperateIndex] = 0.7
+      } else {
+        probs[0] = 0.7
+      }
+      return {
+        type: 'mixed',
+        mixedProbabilities: probs
+      }
+    }
+  },
+  'aggressive-bias': {
+    name: "Aggressive Bias",
+    description: "70% aggressive, 30% other strategies",
+    icon: Target,
+    color: "bg-red-400",
+    strategy: (strategies: string[]): PlayerStrategy => {
+      const aggressiveIndex = strategies.findIndex(s => 
+        s.toLowerCase().includes('defect') || 
+        s.toLowerCase().includes('d') ||
+        s.toLowerCase() === 'switch' ||
+        s.toLowerCase() === 'hawk'
+      )
+      const probs = new Array(strategies.length).fill(0.3 / (strategies.length - 1))
+      if (aggressiveIndex >= 0) {
+        probs[aggressiveIndex] = 0.7
+      } else {
+        probs[strategies.length > 1 ? 1 : 0] = 0.7
+      }
+      return {
+        type: 'mixed',
+        mixedProbabilities: probs
+      }
+    }
+  },
+  'tit-for-tat-adaptive': {
+    name: "Tit for Tat",
+    description: "Adaptive tit-for-tat strategy",
+    icon: TrendingUp,
+    color: "bg-purple-500",
+    strategy: (): PlayerStrategy => ({
+      type: 'adaptive',
+      adaptiveType: 'tit-for-tat',
+      learningRate: 0.1
+    })
+  }
+}
+
 export function PlayerConfiguration({
   playerCount,
   strategies,
@@ -148,6 +257,7 @@ export function PlayerConfiguration({
 }: PlayerConfigurationProps) {
   const [activePlayer, setActivePlayer] = useState(0)
   const [showAdvanced, setShowAdvanced] = useState(false)
+  const [showStrategyTemplates, setShowStrategyTemplates] = useState(false)
 
   // Initialize players when player count changes
   useEffect(() => {
@@ -262,9 +372,75 @@ export function PlayerConfiguration({
     reader.readAsText(file)
   }
 
+  const applyStrategyTemplate = (playerIndex: number, templateKey: keyof typeof STRATEGY_TEMPLATES) => {
+    const template = STRATEGY_TEMPLATES[templateKey]
+    const newStrategy = template.strategy(strategies)
+    updatePlayer(playerIndex, { strategy: newStrategy })
+  }
+
+  const validatePlayerConfiguration = (): { isValid: boolean; issues: string[] } => {
+    const issues: string[] = []
+    
+    // Check for unnamed players
+    const unnamedPlayers = players.filter(p => !p.name.trim())
+    if (unnamedPlayers.length > 0) {
+      issues.push(`${unnamedPlayers.length} player(s) need names`)
+    }
+    
+    // Check for invalid mixed strategy probabilities
+    players.forEach((player, index) => {
+      if (player.strategy.type === 'mixed' && player.strategy.mixedProbabilities) {
+        const sum = player.strategy.mixedProbabilities.reduce((a, b) => a + b, 0)
+        if (Math.abs(sum - 1) > 0.01) {
+          issues.push(`Player ${index + 1}: Mixed strategy probabilities don't sum to 1 (sum: ${sum.toFixed(3)})`)
+        }
+        if (player.strategy.mixedProbabilities.some(p => p < 0)) {
+          issues.push(`Player ${index + 1}: Mixed strategy has negative probabilities`)
+        }
+      }
+    })
+    
+    // Check for duplicate player names
+    const names = players.map(p => p.name.trim().toLowerCase()).filter(n => n)
+    const duplicateNames = names.filter((name, index) => names.indexOf(name) !== index)
+    if (duplicateNames.length > 0) {
+      issues.push(`Duplicate player names: ${[...new Set(duplicateNames)].join(', ')}`)
+    }
+    
+    return {
+      isValid: issues.length === 0,
+      issues
+    }
+  }
+
+  const generateRandomConfiguration = () => {
+    const newPlayers = players.map((player, index) => {
+      const behaviors = Object.keys(BEHAVIOR_PRESETS) as Array<keyof typeof BEHAVIOR_PRESETS>
+      const templates = Object.keys(STRATEGY_TEMPLATES) as Array<keyof typeof STRATEGY_TEMPLATES>
+      
+      const randomBehavior = behaviors[Math.floor(Math.random() * behaviors.length)]
+      const randomTemplate = templates[Math.floor(Math.random() * templates.length)]
+      const preset = BEHAVIOR_PRESETS[randomBehavior]
+      
+      return {
+        ...player,
+        name: `Player ${index + 1}`,
+        behavior: randomBehavior,
+        strategy: STRATEGY_TEMPLATES[randomTemplate].strategy(strategies),
+        skillLevel: preset.skillLevel + Math.floor(Math.random() * 21) - 10, // ±10 variation
+        riskTolerance: preset.riskTolerance + Math.floor(Math.random() * 21) - 10,
+        cooperationBias: preset.cooperationBias + Math.floor(Math.random() * 21) - 10
+      }
+    })
+    
+    onPlayersChange(newPlayers)
+  }
+
   if (players.length === 0) {
     return <div>Loading player configuration...</div>
   }
+
+  const validation = validatePlayerConfiguration()
 
   return (
     <TooltipProvider>
@@ -288,6 +464,22 @@ export function PlayerConfiguration({
               <Badge variant="outline">
                 {gameType}
               </Badge>
+              {!validation.isValid && (
+                <Tooltip>
+                  <TooltipTrigger>
+                    <Badge variant="destructive" className="bg-red-50 text-red-700 border-red-200">
+                      {validation.issues.length} Issues
+                    </Badge>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <div className="space-y-1">
+                      {validation.issues.map((issue, index) => (
+                        <div key={index} className="text-sm">{issue}</div>
+                      ))}
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              )}
             </div>
           </div>
         </CardHeader>
@@ -357,6 +549,15 @@ export function PlayerConfiguration({
               </TabsList>
 
               <div className="flex items-center gap-2">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="outline" size="sm" onClick={generateRandomConfiguration}>
+                      <Shuffle className="w-4 h-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Generate random configuration</TooltipContent>
+                </Tooltip>
+
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button variant="outline" size="sm" onClick={resetToDefaults}>
@@ -457,6 +658,47 @@ export function PlayerConfiguration({
                   </div>
                 </div>
 
+                {/* Strategy Templates */}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Label>Strategy Templates</Label>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowStrategyTemplates(!showStrategyTemplates)}
+                      className="h-6 w-6 p-0"
+                    >
+                      <Info className="w-4 h-4" />
+                    </Button>
+                  </div>
+                  
+                  {showStrategyTemplates && (
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2 p-3 bg-gray-50/50 rounded-lg">
+                      {Object.entries(STRATEGY_TEMPLATES).map(([key, template]) => {
+                        const Icon = template.icon
+                        return (
+                          <Tooltip key={key}>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => applyStrategyTemplate(index, key as keyof typeof STRATEGY_TEMPLATES)}
+                                className="flex flex-col items-center gap-1 h-auto py-2"
+                              >
+                                <Icon className="w-3 h-3" />
+                                <span className="text-xs">{template.name}</span>
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>{template.description}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
+
                 {/* Strategy Configuration */}
                 <div className="space-y-4">
                   <Label>Strategy Type</Label>
@@ -513,7 +755,16 @@ export function PlayerConfiguration({
                   {/* Mixed Strategy */}
                   {player.strategy.type === 'mixed' && (
                     <div className="space-y-3">
-                      <Label>Strategy Probabilities</Label>
+                      <div className="flex items-center justify-between">
+                        <Label>Strategy Probabilities</Label>
+                        <Badge variant="outline" className={
+                          Math.abs((player.strategy.mixedProbabilities?.reduce((a, b) => a + b, 0) || 0) - 1) > 0.01
+                            ? 'border-red-200 text-red-700 bg-red-50'
+                            : 'border-green-200 text-green-700 bg-green-50'
+                        }>
+                          Sum: {((player.strategy.mixedProbabilities?.reduce((a, b) => a + b, 0) || 0) * 100).toFixed(1)}%
+                        </Badge>
+                      </div>
                       {strategies.map((strategy, stratIndex) => (
                         <div key={stratIndex} className="space-y-2">
                           <div className="flex items-center justify-between">
@@ -678,23 +929,41 @@ export function PlayerConfiguration({
             ))}
           </Tabs>
 
-          {/* Summary */}
-          <div className="mt-6 p-4 bg-blue-50/50 rounded-lg">
-            <h4 className="font-medium text-blue-900 mb-2">Configuration Summary</h4>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-              <div>
-                <span className="text-blue-700 font-medium">Human Players:</span>
-                <span className="ml-2">{players.filter(p => p.isHuman).length}</span>
+          {/* Summary and Validation */}
+          <div className="mt-6 space-y-4">
+            {/* Validation Issues */}
+            {!validation.isValid && (
+              <div className="p-4 bg-red-50/50 rounded-lg border border-red-200">
+                <h4 className="font-medium text-red-900 mb-2">Configuration Issues</h4>
+                <div className="space-y-1">
+                  {validation.issues.map((issue, index) => (
+                    <div key={index} className="text-sm text-red-700 flex items-center gap-2">
+                      <div className="w-1 h-1 bg-red-500 rounded-full" />
+                      {issue}
+                    </div>
+                  ))}
+                </div>
               </div>
-              <div>
-                <span className="text-blue-700 font-medium">AI Players:</span>
-                <span className="ml-2">{players.filter(p => !p.isHuman).length}</span>
-              </div>
-              <div>
-                <span className="text-blue-700 font-medium">Strategy Types:</span>
-                <span className="ml-2">
-                  {Array.from(new Set(players.map(p => p.strategy.type))).join(', ')}
-                </span>
+            )}
+
+            {/* Configuration Summary */}
+            <div className="p-4 bg-blue-50/50 rounded-lg">
+              <h4 className="font-medium text-blue-900 mb-2">Configuration Summary</h4>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                <div>
+                  <span className="text-blue-700 font-medium">Human Players:</span>
+                  <span className="ml-2">{players.filter(p => p.isHuman).length}</span>
+                </div>
+                <div>
+                  <span className="text-blue-700 font-medium">AI Players:</span>
+                  <span className="ml-2">{players.filter(p => !p.isHuman).length}</span>
+                </div>
+                <div>
+                  <span className="text-blue-700 font-medium">Strategy Types:</span>
+                  <span className="ml-2">
+                    {Array.from(new Set(players.map(p => p.strategy.type))).join(', ')}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
