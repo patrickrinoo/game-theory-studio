@@ -59,6 +59,10 @@ const nextConfig = {
   webpack: (config, { isServer }) => {
     // Optimize for production
     if (!isServer) {
+      // Ensure splitChunks is properly configured
+      if (!config.optimization.splitChunks || typeof config.optimization.splitChunks === 'boolean') {
+        config.optimization.splitChunks = {};
+      }
       config.optimization.splitChunks.chunks = 'all';
     }
     
