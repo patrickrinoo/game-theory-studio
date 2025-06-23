@@ -32,6 +32,7 @@ import { LoadingSpinner, SimulationLoader, LoadingOverlay } from "@/components/u
 import { ErrorBoundary, ErrorDisplay } from "@/components/ui/error-boundary"
 import { ResponsiveContainer, ResponsiveGrid, ResponsiveButtonStack } from "@/components/ui/responsive-layout"
 import { Button } from "@/components/ui/button"
+import ExportManager, { ShareableResultData } from '@/lib/export-manager'
 
 // UI-specific interface for game scenarios (matching the one in GameSelector)
 interface UIGameScenario {
@@ -79,6 +80,7 @@ export default function GameTheorySimulator() {
   const [activeTab, setActiveTab] = useState("setup")
   const [simulationHistory, setSimulationHistory] = useState<SimulationResult[]>([])
   const [showWelcome, setShowWelcome] = useState(true)
+  const [sharedResult, setSharedResult] = useState<ShareableResultData | null>(null)
 
   // Convert UI game scenario to proper GameScenario format
   const convertToGameScenario = (uiGame: UIGameScenario): GameScenario => {
@@ -117,6 +119,23 @@ export default function GameTheorySimulator() {
     const saved = localStorage.getItem("gameTheoryHistory")
     if (saved) {
       setSimulationHistory(JSON.parse(saved))
+    }
+  }, [])
+
+  // Load shared result from URL on component mount
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search)
+    const shareParam = urlParams.get('share')
+    
+    if (shareParam) {
+      const exportManager = ExportManager.getInstance()
+      const sharedData = exportManager.parseSharedResult(shareParam)
+      
+      if (sharedData) {
+        setSharedResult(sharedData)
+        // You could also load the game scenario based on the shared data
+        // and show the results in a special "shared result" view
+      }
     }
   }, [])
 

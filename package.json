@@ -21,7 +21,16 @@
     "build": "next build",
     "dev": "next dev",
     "lint": "next lint",
-    "start": "next start"
+    "start": "next start",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest run --coverage",
+    "test:watch": "vitest --watch",
+    "test:integration": "vitest run __tests__/integration.test.ts",
+    "test:performance": "vitest run __tests__/performance.test.ts",
+    "test:e2e": "vitest run __tests__/e2e-simulation.test.ts",
+    "test:unit": "vitest run __tests__/**/*.test.ts --exclude __tests__/integration.test.ts --exclude __tests__/performance.test.ts --exclude __tests__/e2e-simulation.test.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
@@ -81,11 +90,21 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.0.0",
+    "@testing-library/react": "^14.0.0",
+    "@testing-library/user-event": "^14.0.0",
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^4.6.0",
+    "@vitest/coverage-v8": "^1.0.0",
+    "@vitest/ui": "^1.0.0",
+    "eslint": "^8",
+    "eslint-config-next": "14.0.0",
+    "jsdom": "^23.2.0",
     "postcss": "^8.5",
     "tailwindcss": "^3.4.17",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^1.6.1"
   }
 }

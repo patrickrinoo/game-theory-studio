@@ -3095,14 +3095,14 @@ export class MonteCarloEngine {
     // Configure convergence analysis
     this.configureConvergence({
       ...convergenceOptions,
-      playerCount: game.playerCount,
+      playerCount: game.payoffMatrix.players,
       enable: true
     })
 
     // Configure advanced results aggregation
     this.configureAdvancedResults({
       ...advancedResultsOptions,
-      playerCount: game.playerCount,
+      playerCount: game.payoffMatrix.players,
       enable: true
     })
 
@@ -3187,6 +3187,23 @@ export class MonteCarloEngine {
       enableLearning = false
     } = params
 
+    // Validate input parameters
+    if (iterations < 0) {
+      throw new Error('Iterations must be non-negative')
+    }
+    
+    if (!payoffMatrix || !Array.isArray(payoffMatrix) || payoffMatrix.length === 0) {
+      throw new Error('Invalid payoff matrix')
+    }
+
+    if (playerStrategies && playerStrategies.length !== game.payoffMatrix.players) {
+      throw new Error('Number of player strategies must match number of players')
+    }
+
+    if (mixedStrategies && mixedStrategies.length !== game.payoffMatrix.players) {
+      throw new Error('Number of mixed strategies must match number of players')
+    }
+
     // Configure RNG if specified
     if (rngType) {
       this.configureRNG(rngType, seed)
@@ -3201,8 +3218,8 @@ export class MonteCarloEngine {
     const outcomes: { [key: string]: number } = {}
     const strategyFrequencies: { [key: string]: number } = {}
     const convergenceData: Array<{ iteration: number; strategies: number[] }> = []
-    const playerPayoffs: number[][] = Array(game.playerCount)
-      .fill(null)
+    const playerPayoffs: number[][] = Array(game.payoffMatrix.players)
+      .fill(0)
       .map(() => [])
     const opponentHistories: Map<string, number[]> = new Map()
 
@@ -3229,13 +3246,39 @@ export class MonteCarloEngine {
       if (this.isInterrupted) {
         finalIteration = i
         earlyStopReason = 'Simulation interrupted by user'
+        
+        // Save simulation state for resumption
+        this.simulationState = {
+          iteration: i,
+          outcomes,
+          strategyFrequencies,
+          playerPayoffs,
+          convergenceData,
+          playerHistories: this.playerHistories,
+          strategyRewards: this.strategyRewards,
+          opponentHistories,
+          isInterrupted: true,
+          resumeData: {
+            game,
+            payoffMatrix,
+            iterations,
+            playerStrategies,
+            mixedStrategies,
+            onProgress,
+            rngType,
+            seed,
+            gameScenario,
+            players,
+            enableLearning
+          }
+        }
         break
       }
 
       // Determine strategies for each player
       const chosenStrategies: number[] = []
 
-      for (let playerIndex = 0; playerIndex < game.playerCount; playerIndex++) {
+              for (let playerIndex = 0; playerIndex < game.payoffMatrix.players; playerIndex++) {
         let strategyIndex: number
 
         if (params.players && gameScenario && playerIndex < params.players.length) {
@@ -3255,8 +3298,9 @@ export class MonteCarloEngine {
               params.mixedStrategies[playerIndex] || new Array(game.strategies.length).fill(1 / game.strategies.length)
             strategyIndex = this.selectStrategyByProbability(probabilities)
           } else {
-            const strategyIndexFromName = game.strategies.findIndex(
-              (s: string) => s.toLowerCase() === playerStrategy.toLowerCase(),
+            const strategies = game.strategies || game.payoffMatrix?.strategies?.map((s: any) => s.name) || ['Strategy 0', 'Strategy 1']
+            const strategyIndexFromName = strategies.findIndex(
+              (s: string) => s.toLowerCase() === (playerStrategy || 'strategy0').toLowerCase(),
             )
             strategyIndex = strategyIndexFromName >= 0 ? strategyIndexFromName : 0
           }
@@ -3285,11 +3329,12 @@ export class MonteCarloEngine {
 
       // Update advanced results aggregation
       if (this.resultsAggregator && this.enableAdvancedResults) {
+        const strategies = game.strategies || game.payoffMatrix?.strategies?.map((s: any) => s.name) || ['Strategy 0', 'Strategy 1']
         this.resultsAggregator.addIterationData(
           i,
           iterationPayoffs,
           chosenStrategies,
-          game.strategies
+          strategies
         )
       }
 
@@ -3326,7 +3371,7 @@ export class MonteCarloEngine {
             this.playerHistories.set(player.id, history)
 
             // Update opponent histories (simplified for 2-player)
-            if (game.playerCount === 2) {
+            if (game.payoffMatrix.players === 2) {
               const opponentIndex = 1 - playerIndex
               const opponentHistory = opponentHistories.get(player.id) || []
               if (opponentIndex < chosenStrategies.length) {
@@ -3339,11 +3384,12 @@ export class MonteCarloEngine {
       }
 
       // Record outcome
-      const outcomeKey = chosenStrategies.map((s) => game.strategies[s]).join("-")
+      const strategies = game.strategies || game.payoffMatrix?.strategies?.map((s: any) => s.name) || ['Strategy 0', 'Strategy 1']
+      const outcomeKey = chosenStrategies.map((s) => strategies[s] || `Strategy ${s}`).join("-")
       outcomes[outcomeKey] = (outcomes[outcomeKey] || 0) + 1
 
       // Record strategy frequency
-      const strategyKey = chosenStrategies.map((s) => game.strategies[s]).join("-")
+      const strategyKey = chosenStrategies.map((s) => strategies[s] || `Strategy ${s}`).join("-")
       strategyFrequencies[strategyKey] = (strategyFrequencies[strategyKey] || 0) + 1
 
       // Record convergence data (sample every 100 iterations for performance)
@@ -3405,6 +3451,24 @@ export class MonteCarloEngine {
       strategyFrequencies,
       expectedPayoffs,
       convergenceData,
+      statistics: {
+        mean: expectedPayoffs,
+        variance: playerPayoffs.map((payoffs) => {
+          const mean = payoffs.reduce((sum, p) => sum + p, 0) / payoffs.length
+          return payoffs.reduce((sum, p) => sum + Math.pow(p - mean, 2), 0) / payoffs.length
+        }),
+        confidenceInterval: playerPayoffs.map((payoffs) => {
+          const mean = payoffs.reduce((sum, p) => sum + p, 0) / payoffs.length
+          const variance = payoffs.reduce((sum, p) => sum + Math.pow(p - mean, 2), 0) / payoffs.length
+          const stdError = Math.sqrt(variance / payoffs.length)
+          const margin = 1.96 * stdError // 95% confidence interval
+          return {
+            lower: mean - margin,
+            upper: mean + margin
+          }
+        })
+      },
+      executionTime: this.performanceMonitor.getElapsedTime(),
       rngInfo: this.getRNGInfo(),
       playerHistories: enableLearning ? Object.fromEntries(this.playerHistories) : undefined,
       strategyRewards: enableLearning ? Object.fromEntries(this.strategyRewards) : undefined,

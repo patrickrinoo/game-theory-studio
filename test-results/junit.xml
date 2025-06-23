@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites name="vitest tests" tests="5" failures="0" errors="0" time="2.747">
+    <testsuite name="__tests__/export-functionality.test.ts" timestamp="2025-06-23T11:55:37.817Z" hostname="rino" tests="5" failures="0" errors="0" skipped="0" time="0.008">
+        <testcase classname="__tests__/export-functionality.test.ts" name="Export Functionality - Task 11 &gt; should export results as CSV files" time="0.004">
+        </testcase>
+        <testcase classname="__tests__/export-functionality.test.ts" name="Export Functionality - Task 11 &gt; should export results as Excel files" time="0.001">
+        </testcase>
+        <testcase classname="__tests__/export-functionality.test.ts" name="Export Functionality - Task 11 &gt; should create shareable URLs" time="0">
+        </testcase>
+        <testcase classname="__tests__/export-functionality.test.ts" name="Export Functionality - Task 11 &gt; should export images in multiple formats" time="0">
+        </testcase>
+        <testcase classname="__tests__/export-functionality.test.ts" name="Export Functionality - Task 11 &gt; should generate comprehensive reports" time="0.001">
+        </testcase>
+    </testsuite>
+</testsuites>

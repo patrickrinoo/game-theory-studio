@@ -605,13 +605,51 @@
         "id": 16,
         "title": "Testing and Quality Assurance",
         "description": "Implement comprehensive testing suite and quality assurance",
-        "status": "pending",
+        "status": "in-progress",
         "priority": "high",
         "dependencies": [
           13
         ],
         "details": "Create unit tests for simulation algorithms, integration tests for user workflows, and end-to-end tests for complete simulation scenarios. Implement performance testing and cross-browser compatibility testing. Add error monitoring and logging.",
-        "testStrategy": "Achieve >90% code coverage and verify all acceptance criteria from the PRD are met."
+        "testStrategy": "Achieve >90% code coverage and verify all acceptance criteria from the PRD are met.",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Unit Tests for Core Algorithms",
+            "description": "Create comprehensive unit tests for Monte Carlo engine, Nash equilibrium calculator, and game theory algorithms",
+            "details": "Test all core simulation algorithms including Monte Carlo engine, Nash equilibrium calculations, strategy analysis, RNG validation, convergence analysis, and performance optimization components. Achieve >90% code coverage for critical algorithms.",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 16
+          },
+          {
+            "id": 2,
+            "title": "Integration Tests for User Workflows",
+            "description": "Test complete user workflows from game configuration to result visualization",
+            "details": "Create integration tests covering game scenario configuration, simulation execution, results processing, visualization rendering, and data export functionality. Test multi-component interactions and data flow.",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 16
+          },
+          {
+            "id": 3,
+            "title": "End-to-End Testing Suite",
+            "description": "Implement E2E tests for complete simulation scenarios using Playwright",
+            "details": "Create end-to-end tests that simulate real user interactions, testing complete simulation workflows from start to finish. Include tests for all game theory scenarios mentioned in PRD: Prisoner's Dilemma, Battle of Sexes, Chicken Game, Stag Hunt, etc.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 16
+          },
+          {
+            "id": 4,
+            "title": "Performance Testing Framework",
+            "description": "Create performance benchmarks and load testing for simulation algorithms",
+            "details": "Implement performance testing to verify PRD requirements: simulations complete within 5 seconds for simple scenarios, 30 seconds for complex ones. Test memory usage, rendering performance, and optimization effectiveness.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 16
+          }
+        ]
       },
       {
         "id": 17,
@@ -635,7 +673,7 @@
       "projectName": "Monte Carlo Game Theory Simulation",
       "description": "A web-based application for Monte Carlo simulations in game theory scenarios",
       "created": "2025-06-20T05:39:04.846Z",
-      "updated": "2025-06-23T10:38:43.460Z"
+      "updated": "2025-06-23T11:32:05.138Z"
     }
   }
 }
