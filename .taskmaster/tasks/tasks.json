@@ -480,14 +480,36 @@
         "id": 10,
         "title": "Results Analysis Dashboard",
         "description": "Build comprehensive results display and analysis interface",
-        "status": "pending",
+        "status": "in-progress",
         "priority": "medium",
         "dependencies": [
           7,
           8
         ],
         "details": "Create dashboard showing simulation results including most frequent strategies, expected payoffs, outcome probabilities, and strategy convergence analysis. Implement result comparison tools and statistical summaries. Add explanation of key takeaways and optimal strategies.",
-        "testStrategy": "Verify result accuracy against simulation data and test dashboard responsiveness with various result set sizes."
+        "testStrategy": "Verify result accuracy against simulation data and test dashboard responsiveness with various result set sizes.",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Unified Results Dashboard Component",
+            "description": "Create the main results analysis dashboard that consolidates all visualization and analysis components",
+            "details": "Build a comprehensive dashboard component that integrates existing visualization-dashboard.tsx, strategic-analysis-dashboard.tsx, and results-visualization.tsx components. Create a unified interface with tabs/sections for different analysis views, responsive layout, and consistent data flow between components.",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 10
+          },
+          {
+            "id": 2,
+            "title": "Strategy Frequency Analysis",
+            "description": "Implement analysis and visualization of most frequent strategies from simulation results",
+            "details": "Create components to analyze and display the most frequently chosen strategies by each player during simulations. Include statistical analysis, frequency charts, pattern recognition, and comparison across different simulation runs. Show strategy evolution trends and identify stable patterns.",
+            "status": "pending",
+            "dependencies": [
+              "10.1"
+            ],
+            "parentTaskId": 10
+          }
+        ]
       },
       {
         "id": 11,
@@ -584,7 +606,7 @@
       "projectName": "Monte Carlo Game Theory Simulation",
       "description": "A web-based application for Monte Carlo simulations in game theory scenarios",
       "created": "2025-06-20T05:39:04.846Z",
-      "updated": "2025-06-23T09:12:07.961Z"
+      "updated": "2025-06-23T10:16:47.449Z"
     }
   }
 }
