@@ -10,6 +10,42 @@ body {
   .text-balance {
     text-wrap: balance;
   }
+  .interactive-fix {
+    pointer-events: auto !important;
+    cursor: pointer;
+  }
+  
+  button {
+    pointer-events: auto !important;
+  }
+  
+  [role="button"] {
+    pointer-events: auto !important;
+    cursor: pointer;
+  }
+  
+  .btn, .button {
+    pointer-events: auto !important;
+    cursor: pointer;
+  }
+  
+  /* Fix for any potential z-index issues */
+  .tab-trigger {
+    position: relative;
+    z-index: 10;
+  }
+  
+  /* Ensure tab content doesn't block interactions */
+  .tab-content {
+    position: relative;
+    z-index: 1;
+  }
+  
+  /* Debug styles */
+  .debug-clickable {
+    outline: 2px dashed red !important;
+    background-color: rgba(255, 0, 0, 0.1) !important;
+  }
 }
 
 @layer base {

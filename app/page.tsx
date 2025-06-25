@@ -371,104 +371,102 @@ export default function GameTheorySimulator() {
 
   if (showWelcome) {
     return (
-      <ErrorBoundary onError={(error, errorInfo) => {
-        console.error('Welcome screen error:', error, errorInfo)
-      }}>
-        <div className="relative min-h-screen flex items-center justify-center p-4">
-          <ResponsiveContainer size="lg" className="text-center">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-3xl shadow-2xl shadow-blue-500/25">
-              <Sparkles className="w-10 h-10 text-white" />
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center p-4">
+        <div className="max-w-4xl mx-auto text-center">
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-3xl shadow-2xl shadow-blue-500/25 mb-8">
+            <Sparkles className="w-10 h-10 text-white" />
+          </div>
+          
+          <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent mb-6">
+            Game Theory Studio
+          </h1>
+          
+          <p className="text-xl text-gray-600 mb-12 max-w-2xl mx-auto">
+            Explore strategic decision-making through interactive Monte Carlo simulations and real-time visualizations
+          </p>
+          
+          {/* Feature Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-3xl mx-auto mb-12">
+            <div className="group bg-white/70 backdrop-blur-xl p-8 rounded-3xl border border-white/20 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                <Play className="w-6 h-6 text-white" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Interactive Simulations</h3>
+              <p className="text-gray-600">Run Monte Carlo simulations on classic game theory scenarios</p>
             </div>
-            <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent mt-8 mb-6">
-              Game Theory Studio
-            </h1>
-            <p className="text-xl text-gray-600 mb-12 max-w-2xl mx-auto">
-              Explore strategic decision-making through interactive Monte Carlo simulations and real-time visualizations
-            </p>
             
-            <ResponsiveGrid cols={{ sm: 1, md: 3 }} gap={6} className="max-w-3xl mx-auto">
-              <div className="group bg-white/70 backdrop-blur-xl p-8 rounded-3xl border border-white/20 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                  <Play className="w-6 h-6 text-white" />
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">Interactive Simulations</h3>
-                <p className="text-gray-600">Run Monte Carlo simulations on classic game theory scenarios</p>
+            <div className="group bg-white/70 backdrop-blur-xl p-8 rounded-3xl border border-white/20 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+              <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                <BarChart3 className="w-6 h-6 text-white" />
               </div>
-              
-              <div className="group bg-white/70 backdrop-blur-xl p-8 rounded-3xl border border-white/20 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
-                <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                  <BarChart3 className="w-6 h-6 text-white" />
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">Real-time Visualization</h3>
-                <p className="text-gray-600">Dynamic charts and graphs showing strategy evolution</p>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Real-time Visualization</h3>
+              <p className="text-gray-600">Dynamic charts and graphs showing strategy evolution</p>
+            </div>
+            
+            <div className="group bg-white/70 backdrop-blur-xl p-8 rounded-3xl border border-white/20 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+              <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                <Target className="w-6 h-6 text-white" />
               </div>
-              
-              <div className="group bg-white/70 backdrop-blur-xl p-8 rounded-3xl border border-white/20 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
-                <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                  <Target className="w-6 h-6 text-white" />
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">Strategic Analysis</h3>
-                <p className="text-gray-600">Find Nash equilibria and optimal strategies</p>
-              </div>
-            </ResponsiveGrid>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Strategic Analysis</h3>
+              <p className="text-gray-600">Find Nash equilibria and optimal strategies</p>
+            </div>
+          </div>
 
-            <ResponsiveButtonStack stack={{ base: false, md: false }} className="justify-center mt-12">
-              <Button 
-                onClick={() => {
-                  console.log('Get Started button clicked!')
-                  alert('Button click detected! Welcome functionality is working.')
-                  setShowWelcome(false)
-                }} 
-                size="lg" 
-                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-4 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1"
-              >
-                <span className="relative z-10 flex items-center gap-2">
-                  <Play className="w-5 h-5" />
-                  Get Started
-                </span>
-              </Button>
-              <Button 
-                variant="outline" 
-                size="lg"
-                onClick={() => {
-                  console.log('Tutorial button clicked!')
-                  alert('Tutorial button works! Opening tutorial...')
-                  try {
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <button 
+              onClick={() => {
+                console.log('Get Started button clicked!')
+                setShowWelcome(false)
+              }}
+              className="interactive-fix bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-4 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 flex items-center gap-2 font-medium"
+            >
+              <Play className="w-5 h-5" />
+              Get Started
+            </button>
+            
+            <button 
+              onClick={() => {
+                console.log('Tutorial button clicked!')
+                try {
+                  if (tutorialSystem && tutorialSystem.openTutorial) {
                     tutorialSystem.openTutorial('introduction-to-game-theory')
-                  } catch (error) {
-                    console.error('Tutorial system error:', error)
-                    alert('Tutorial system not available - proceeding to main app')
+                  } else {
+                    console.warn('Tutorial system not available, proceeding to main app')
                     setShowWelcome(false)
                   }
-                }}
-                className="border-2 border-gray-300 hover:border-gray-400 px-8 py-4 rounded-2xl transition-all duration-300"
-              >
-                <BookOpen className="w-5 h-5 mr-2" />
-                Start Tutorial
-              </Button>
-            </ResponsiveButtonStack>
-            
-            {/* Debug Information */}
-            <div className="mt-8 p-4 bg-gray-100 rounded-lg text-left text-sm">
-              <strong>Debug Info:</strong><br />
-              Show Welcome: {showWelcome.toString()}<br />
-              Tutorial System Available: {tutorialSystem ? 'Yes' : 'No'}<br />
-              Initialization Error: {initializationError || 'None'}
-            </div>
-          </ResponsiveContainer>
-
-          {/* Tutorial System */}
-          {tutorialSystem && tutorialSystem.isOpen && (
-            <div className="fixed inset-0 z-50">
-              <TutorialSystem
-                isOpen={tutorialSystem.isOpen}
-                onClose={() => tutorialSystem.closeTutorial()}
-                tutorialId={tutorialSystem.tutorialId}
-              />
-            </div>
-          )}
+                } catch (error) {
+                  console.error('Tutorial system error:', error)
+                  setShowWelcome(false)
+                }
+              }}
+              className="interactive-fix border-2 border-gray-300 hover:border-gray-400 bg-white hover:bg-gray-50 text-gray-700 px-8 py-4 rounded-2xl transition-all duration-300 flex items-center gap-2 font-medium"
+            >
+              <BookOpen className="w-5 h-5" />
+              Start Tutorial
+            </button>
+          </div>
+          
+          {/* Debug Information */}
+          <div className="mt-8 p-4 bg-white/50 rounded-lg text-left text-sm max-w-md mx-auto">
+            <strong>Status:</strong><br />
+            Welcome Screen: Active<br />
+            Tutorial System: {tutorialSystem ? 'Available' : 'Not Available'}<br />
+            Click Test: Try clicking the buttons above
+          </div>
         </div>
-      </ErrorBoundary>
+
+        {/* Tutorial System Modal */}
+        {tutorialSystem && tutorialSystem.isOpen && (
+          <div className="fixed inset-0 z-50">
+            <TutorialSystem
+              isOpen={tutorialSystem.isOpen}
+              onClose={() => tutorialSystem.closeTutorial()}
+              tutorialId={tutorialSystem.tutorialId}
+            />
+          </div>
+        )}
+      </div>
     )
   }
 
