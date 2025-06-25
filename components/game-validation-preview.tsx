@@ -270,42 +270,33 @@ export function GameValidationPreview({
     const suggestions: string[] = []
     let score = 0
 
-    console.log('Validation Debug:', {
-      hasGame: !!game,
-      gamePlayerCount: game?.playerCount,
-      gameStrategies: game?.strategies,
-      payoffMatrixLength: payoffMatrix?.length,
-      payoffMatrix: payoffMatrix,
-      playersLength: players?.length
-    })
-
     if (!game) {
       errors.push("No game scenario selected")
       return { isValid: false, errors, warnings, suggestions, score }
     }
 
-    if (!payoffMatrix || payoffMatrix.length === 0) {
-      errors.push("Payoff matrix is empty")
+    // Show loading state if matrix is being updated
+    if (!payoffMatrix) {
+      errors.push("Loading payoff matrix...")
+      return { isValid: false, errors, warnings, suggestions, score }
+    }
+
+    if (payoffMatrix.length === 0) {
+      errors.push("Payoff matrix is empty - please ensure the selected game has proper configuration")
       return { isValid: false, errors, warnings, suggestions, score }
     }
 
     if (players.length === 0) {
-      errors.push("No players configured")
-      return { isValid: false, errors, warnings, suggestions, score }
+      warnings.push("No players configured yet - this will be set automatically")
+      // Don't return here, continue validation
     }
 
     // Validate matrix dimensions
-    const playerCount = game.playerCount
-    const strategyCount = game.strategies.length
-
-    console.log('Matrix validation:', {
-      expectedStrategyCount: strategyCount,
-      actualMatrixLength: payoffMatrix.length,
-      expectedPlayerCount: playerCount
-    })
+    const playerCount = game.playerCount || 2
+    const strategyCount = game.strategies?.length || 2
 
     if (payoffMatrix.length !== strategyCount) {
-      errors.push(`Payoff matrix should have ${strategyCount} strategy combinations`)
+      errors.push(`Payoff matrix should have ${strategyCount} strategy combinations (currently has ${payoffMatrix.length})`)
     } else {
       score += 20
     }
@@ -313,24 +304,13 @@ export function GameValidationPreview({
     // Check each strategy combination
     for (let i = 0; i < payoffMatrix.length; i++) {
       if (!payoffMatrix[i] || payoffMatrix[i].length !== strategyCount) {
-        errors.push(`Strategy combination ${i + 1} has invalid dimensions`)
-        console.log(`Row ${i} validation failed:`, {
-          exists: !!payoffMatrix[i],
-          length: payoffMatrix[i]?.length,
-          expected: strategyCount
-        })
+        errors.push(`Strategy combination ${i + 1} has invalid dimensions (expected ${strategyCount} columns, got ${payoffMatrix[i]?.length || 0})`)
         continue
       }
       
       for (let j = 0; j < payoffMatrix[i].length; j++) {
         if (!payoffMatrix[i][j] || payoffMatrix[i][j].length !== playerCount) {
-          errors.push(`Strategy combination [${i + 1}, ${j + 1}] missing player payoffs`)
-          console.log(`Cell [${i}][${j}] validation failed:`, {
-            exists: !!payoffMatrix[i][j],
-            length: payoffMatrix[i][j]?.length,
-            expected: playerCount,
-            actual: payoffMatrix[i][j]
-          })
+          errors.push(`Strategy combination [${i + 1}, ${j + 1}] missing player payoffs (expected ${playerCount} players, got ${payoffMatrix[i][j]?.length || 0})`)
           continue
         }
         
@@ -338,12 +318,10 @@ export function GameValidationPreview({
         for (let p = 0; p < playerCount; p++) {
           const payoff = payoffMatrix[i][j][p]
           if (typeof payoff !== 'number' || isNaN(payoff)) {
-            errors.push(`Invalid payoff for player ${p + 1} at [${i + 1}, ${j + 1}]`)
-            console.log(`Payoff validation failed at [${i}][${j}][${p}]:`, {
-              value: payoff,
-              type: typeof payoff,
-              isNaN: isNaN(payoff)
-            })
+            errors.push(`Invalid payoff for player ${p + 1} at [${i + 1}, ${j + 1}]: expected number, got ${typeof payoff} (${payoff})`)
+          } else {
+            // Valid payoff found
+            score += 2
           }
         }
       }

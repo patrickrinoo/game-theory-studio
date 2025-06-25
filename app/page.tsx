@@ -205,11 +205,6 @@ export default function GameTheorySimulator() {
       // Ensure the payoff matrix is properly structured
       let matrix = game.payoffMatrix || []
       
-      // Debug logging
-      console.log('Game selected:', game.name)
-      console.log('Original payoff matrix:', matrix)
-      console.log('Expected dimensions:', game.strategies.length, 'x', game.strategies.length, 'x', game.playerCount)
-      
       // Validate and fix matrix structure if needed
       if (!matrix || matrix.length === 0) {
         console.warn('Empty payoff matrix, initializing default matrix...')
@@ -271,7 +266,8 @@ export default function GameTheorySimulator() {
         }
       }
       
-      console.log('Final payoff matrix:', matrix)
+      console.log(`Selected game: ${game.name}`)
+      console.log('Final validated payoff matrix:', JSON.stringify(matrix, null, 2))
       setPayoffMatrix(matrix)
       
       // Update player count to match the game
