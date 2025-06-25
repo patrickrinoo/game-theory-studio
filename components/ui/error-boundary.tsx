@@ -44,8 +44,28 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     // Call custom error handler if provided
     this.props.onError?.(error, errorInfo)
 
-    // Log error for debugging
-    console.error('ErrorBoundary caught an error:', error, errorInfo)
+    // Log error for debugging with more context
+    console.error('ErrorBoundary caught an error:', {
+      error: error.message,
+      stack: error.stack,
+      componentStack: errorInfo.componentStack,
+      errorId: this.state.errorId
+    })
+
+    // Try to recover from common errors
+    this.attemptRecovery(error)
+  }
+
+  private attemptRecovery(error: Error) {
+    // Clear localStorage if it might be corrupted
+    if (error.message.includes('localStorage') || error.message.includes('JSON')) {
+      try {
+        localStorage.removeItem('gameTheoryHistory')
+        console.log('Cleared potentially corrupted localStorage data')
+      } catch (e) {
+        console.warn('Failed to clear localStorage:', e)
+      }
+    }
   }
 
   handleRetry = () => {
@@ -78,6 +98,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
                 We encountered an unexpected error while processing your request.
               </CardDescription>
             </CardHeader>
+            
             <CardContent className="space-y-4">
               {this.state.errorId && (
                 <div className="flex items-center justify-center gap-2">
@@ -91,7 +112,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
               {this.props.showDetails && this.state.error && (
                 <Alert>
                   <Bug className="h-4 w-4" />
-                  <AlertDescription className="font-mono text-xs">
+                  <AlertDescription className="font-mono text-xs break-all">
                     {this.state.error.message}
                   </AlertDescription>
                 </Alert>
@@ -110,7 +131,15 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
               <div className="text-center text-sm text-gray-600">
                 If this problem persists, please{' '}
-                <button className="text-blue-600 hover:underline inline-flex items-center gap-1">
+                <button 
+                  className="text-blue-600 hover:underline inline-flex items-center gap-1"
+                  onClick={() => {
+                    const email = 'support@example.com'
+                    const subject = `Error Report - ID: ${this.state.errorId}`
+                    const body = `Error: ${this.state.error?.message}\n\nError ID: ${this.state.errorId}\n\nPlease describe what you were doing when this error occurred:`
+                    window.location.href = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
+                  }}
+                >
                   <Mail className="w-3 h-3" />
                   contact support
                 </button>

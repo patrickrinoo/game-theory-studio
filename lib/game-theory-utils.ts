@@ -17,7 +17,13 @@ export class GameTheoryUtils {
   private nashCalculator: NashEquilibriumCalculator
 
   constructor() {
-    this.nashCalculator = new NashEquilibriumCalculator()
+    try {
+      this.nashCalculator = new NashEquilibriumCalculator()
+    } catch (error) {
+      console.error('Error initializing Game Theory Utils:', error)
+      // Try to initialize with a basic implementation
+      this.nashCalculator = new NashEquilibriumCalculator()
+    }
   }
 
   /**
@@ -82,82 +88,153 @@ export class GameTheoryUtils {
    * Legacy method for backward compatibility
    */
   findNashEquilibrium(payoffMatrix: number[][][], strategies: string[]) {
-    if (!payoffMatrix || payoffMatrix.length === 0 || !payoffMatrix[0] || payoffMatrix[0].length === 0) return null
+    try {
+      if (!payoffMatrix || payoffMatrix.length === 0 || !payoffMatrix[0] || payoffMatrix[0].length === 0) {
+        console.warn('Invalid payoff matrix provided to findNashEquilibrium')
+        return null
+      }
 
-    const matrix = payoffMatrix
-    const numStrategies = strategies.length
+      if (!strategies || strategies.length === 0) {
+        console.warn('Invalid strategies array provided to findNashEquilibrium')
+        return null
+      }
 
-    // Check all pure strategy combinations for Nash equilibrium
-    for (let i = 0; i < numStrategies; i++) {
-      for (let j = 0; j < numStrategies; j++) {
-        if (this.isPureNashEquilibrium(matrix, i, j, numStrategies)) {
-          return {
-            strategies: [i, j],
-            payoffs: matrix[i][j],
+      const matrix = payoffMatrix
+      const numStrategies = strategies.length
+
+      // Validate matrix dimensions
+      if (matrix.length !== numStrategies) {
+        console.warn(`Matrix dimensions mismatch: expected ${numStrategies} rows, got ${matrix.length}`)
+        return null
+      }
+
+      for (let i = 0; i < matrix.length; i++) {
+        if (!matrix[i] || matrix[i].length !== numStrategies) {
+          console.warn(`Matrix row ${i} has incorrect dimensions`)
+          return null
+        }
+        for (let j = 0; j < matrix[i].length; j++) {
+          if (!matrix[i][j] || !Array.isArray(matrix[i][j]) || matrix[i][j].length < 2) {
+            console.warn(`Matrix cell [${i}][${j}] is invalid`)
+            return null
           }
         }
       }
-    }
 
-    return null // No pure strategy Nash equilibrium found
+      // Check all pure strategy combinations for Nash equilibrium
+      for (let i = 0; i < numStrategies; i++) {
+        for (let j = 0; j < numStrategies; j++) {
+          if (this.isPureNashEquilibrium(matrix, i, j, numStrategies)) {
+            return {
+              strategies: [i, j],
+              payoffs: matrix[i][j],
+            }
+          }
+        }
+      }
+
+      return null // No pure strategy Nash equilibrium found
+    } catch (error) {
+      console.error('Error in findNashEquilibrium:', error)
+      return null
+    }
   }
 
   /**
    * Legacy method for backward compatibility
    */
   findDominantStrategies(payoffMatrix: number[][][], strategies: string[]): string[] {
-    if (!payoffMatrix || payoffMatrix.length === 0) return []
+    try {
+      if (!payoffMatrix || payoffMatrix.length === 0) {
+        console.warn('Invalid payoff matrix provided to findDominantStrategies')
+        return []
+      }
 
-    const matrix = payoffMatrix
-    const dominantStrategies: string[] = []
+      if (!strategies || strategies.length === 0) {
+        console.warn('Invalid strategies array provided to findDominantStrategies')
+        return []
+      }
 
-    // Check for dominant strategies for player 1
-    for (let i = 0; i < strategies.length; i++) {
-      let isDominant = true
-      for (let k = 0; k < strategies.length; k++) {
-        if (k !== i) {
-          let dominatesK = true
-          for (let j = 0; j < strategies.length; j++) {
-            if (matrix[i][j][0] <= matrix[k][j][0]) {
-              dominatesK = false
-              break
-            }
-          }
-          if (!dominatesK) {
-            isDominant = false
-            break
+      const matrix = payoffMatrix
+      const dominantStrategies: string[] = []
+
+      // Validate matrix structure
+      for (let i = 0; i < matrix.length; i++) {
+        if (!matrix[i] || !Array.isArray(matrix[i])) {
+          console.warn(`Matrix row ${i} is invalid`)
+          return []
+        }
+        for (let j = 0; j < matrix[i].length; j++) {
+          if (!matrix[i][j] || !Array.isArray(matrix[i][j]) || matrix[i][j].length < 2) {
+            console.warn(`Matrix cell [${i}][${j}] is invalid`)
+            return []
           }
         }
       }
-      if (isDominant) {
-        dominantStrategies.push(`Player 1: ${strategies[i]}`)
-      }
-    }
 
-    // Check for dominant strategies for player 2
-    for (let j = 0; j < strategies.length; j++) {
-      let isDominant = true
-      for (let k = 0; k < strategies.length; k++) {
-        if (k !== j) {
-          let dominatesK = true
-          for (let i = 0; i < strategies.length; i++) {
-            if (matrix[i][j][1] <= matrix[i][k][1]) {
-              dominatesK = false
+      // Check for dominant strategies for player 1
+      for (let i = 0; i < strategies.length; i++) {
+        let isDominant = true
+        for (let k = 0; k < strategies.length; k++) {
+          if (k !== i) {
+            let dominatesK = true
+            for (let j = 0; j < strategies.length; j++) {
+              try {
+                if (matrix[i][j][0] <= matrix[k][j][0]) {
+                  dominatesK = false
+                  break
+                }
+              } catch (error) {
+                console.warn(`Error accessing matrix[${i}][${j}][0] or matrix[${k}][${j}][0]:`, error)
+                dominatesK = false
+                break
+              }
+            }
+            if (!dominatesK) {
+              isDominant = false
               break
             }
           }
-          if (!dominatesK) {
-            isDominant = false
-            break
-          }
+        }
+        if (isDominant) {
+          dominantStrategies.push(`Player 1: ${strategies[i]}`)
         }
       }
-      if (isDominant) {
-        dominantStrategies.push(`Player 2: ${strategies[j]}`)
-      }
-    }
 
-    return dominantStrategies
+      // Check for dominant strategies for player 2
+      for (let j = 0; j < strategies.length; j++) {
+        let isDominant = true
+        for (let k = 0; k < strategies.length; k++) {
+          if (k !== j) {
+            let dominatesK = true
+            for (let i = 0; i < strategies.length; i++) {
+              try {
+                if (matrix[i][j][1] <= matrix[i][k][1]) {
+                  dominatesK = false
+                  break
+                }
+              } catch (error) {
+                console.warn(`Error accessing matrix[${i}][${j}][1] or matrix[${i}][${k}][1]:`, error)
+                dominatesK = false
+                break
+              }
+            }
+            if (!dominatesK) {
+              isDominant = false
+              break
+            }
+          }
+        }
+        if (isDominant) {
+          dominantStrategies.push(`Player 2: ${strategies[j]}`)
+        }
+      }
+
+      return dominantStrategies
+    } catch (error) {
+      console.error('Error in findDominantStrategies:', error)
+      return []
+    }
   }
 
   /**
@@ -190,23 +267,56 @@ export class GameTheoryUtils {
    * Check if a strategy profile is a pure strategy Nash equilibrium
    */
   private isPureNashEquilibrium(matrix: number[][][], row: number, col: number, numStrategies: number): boolean {
-    const currentPayoffs = matrix[row][col]
-
-    // Check if player 1 wants to deviate
-    for (let i = 0; i < numStrategies; i++) {
-      if (i !== row && matrix[i][col][0] > currentPayoffs[0]) {
+    try {
+      if (!matrix || !matrix[row] || !matrix[row][col] || !Array.isArray(matrix[row][col])) {
         return false
       }
-    }
 
-    // Check if player 2 wants to deviate
-    for (let j = 0; j < numStrategies; j++) {
-      if (j !== col && matrix[row][j][1] > currentPayoffs[1]) {
+      const currentPayoffs = matrix[row][col]
+      
+      if (currentPayoffs.length < 2) {
         return false
       }
-    }
 
-    return true
+      // Check if player 1 wants to deviate
+      for (let i = 0; i < numStrategies; i++) {
+        if (i !== row) {
+          try {
+            if (!matrix[i] || !matrix[i][col] || !Array.isArray(matrix[i][col]) || matrix[i][col].length < 1) {
+              continue
+            }
+            if (matrix[i][col][0] > currentPayoffs[0]) {
+              return false
+            }
+          } catch (error) {
+            console.warn(`Error checking player 1 deviation from ${row} to ${i}:`, error)
+            continue
+          }
+        }
+      }
+
+      // Check if player 2 wants to deviate
+      for (let j = 0; j < numStrategies; j++) {
+        if (j !== col) {
+          try {
+            if (!matrix[row] || !matrix[row][j] || !Array.isArray(matrix[row][j]) || matrix[row][j].length < 2) {
+              continue
+            }
+            if (matrix[row][j][1] > currentPayoffs[1]) {
+              return false
+            }
+          } catch (error) {
+            console.warn(`Error checking player 2 deviation from ${col} to ${j}:`, error)
+            continue
+          }
+        }
+      }
+
+      return true
+    } catch (error) {
+      console.error('Error in isPureNashEquilibrium:', error)
+      return false
+    }
   }
 
   /**

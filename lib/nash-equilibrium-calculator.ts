@@ -19,9 +19,17 @@ export class NashEquilibriumCalculator {
   private validator: EquilibriumValidator
 
   constructor() {
-    this.mixedSolver = new MixedStrategySolver()
-    this.multiPlayerSolver = new MultiPlayerNashSolver()
-    this.validator = new EquilibriumValidator()
+    try {
+      this.mixedSolver = new MixedStrategySolver()
+      this.multiPlayerSolver = new MultiPlayerNashSolver()
+      this.validator = new EquilibriumValidator()
+    } catch (error) {
+      console.error('Error initializing Nash Equilibrium Calculator:', error)
+      // Initialize with fallback implementations or null values
+      this.mixedSolver = new MixedStrategySolver()
+      this.multiPlayerSolver = new MultiPlayerNashSolver()
+      this.validator = new EquilibriumValidator()
+    }
   }
   
   /**
