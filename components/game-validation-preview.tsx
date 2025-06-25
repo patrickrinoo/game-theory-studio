@@ -270,6 +270,15 @@ export function GameValidationPreview({
     const suggestions: string[] = []
     let score = 0
 
+    console.log('Validation Debug:', {
+      hasGame: !!game,
+      gamePlayerCount: game?.playerCount,
+      gameStrategies: game?.strategies,
+      payoffMatrixLength: payoffMatrix?.length,
+      payoffMatrix: payoffMatrix,
+      playersLength: players?.length
+    })
+
     if (!game) {
       errors.push("No game scenario selected")
       return { isValid: false, errors, warnings, suggestions, score }
@@ -289,6 +298,12 @@ export function GameValidationPreview({
     const playerCount = game.playerCount
     const strategyCount = game.strategies.length
 
+    console.log('Matrix validation:', {
+      expectedStrategyCount: strategyCount,
+      actualMatrixLength: payoffMatrix.length,
+      expectedPlayerCount: playerCount
+    })
+
     if (payoffMatrix.length !== strategyCount) {
       errors.push(`Payoff matrix should have ${strategyCount} strategy combinations`)
     } else {
@@ -299,19 +314,36 @@ export function GameValidationPreview({
     for (let i = 0; i < payoffMatrix.length; i++) {
       if (!payoffMatrix[i] || payoffMatrix[i].length !== strategyCount) {
         errors.push(`Strategy combination ${i + 1} has invalid dimensions`)
+        console.log(`Row ${i} validation failed:`, {
+          exists: !!payoffMatrix[i],
+          length: payoffMatrix[i]?.length,
+          expected: strategyCount
+        })
         continue
       }
       
       for (let j = 0; j < payoffMatrix[i].length; j++) {
         if (!payoffMatrix[i][j] || payoffMatrix[i][j].length !== playerCount) {
           errors.push(`Strategy combination [${i + 1}, ${j + 1}] missing player payoffs`)
+          console.log(`Cell [${i}][${j}] validation failed:`, {
+            exists: !!payoffMatrix[i][j],
+            length: payoffMatrix[i][j]?.length,
+            expected: playerCount,
+            actual: payoffMatrix[i][j]
+          })
           continue
         }
         
         // Check for valid numeric payoffs
         for (let p = 0; p < playerCount; p++) {
-          if (typeof payoffMatrix[i][j][p] !== 'number' || isNaN(payoffMatrix[i][j][p])) {
+          const payoff = payoffMatrix[i][j][p]
+          if (typeof payoff !== 'number' || isNaN(payoff)) {
             errors.push(`Invalid payoff for player ${p + 1} at [${i + 1}, ${j + 1}]`)
+            console.log(`Payoff validation failed at [${i}][${j}][${p}]:`, {
+              value: payoff,
+              type: typeof payoff,
+              isNaN: isNaN(payoff)
+            })
           }
         }
       }

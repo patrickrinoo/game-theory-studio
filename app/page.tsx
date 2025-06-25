@@ -31,7 +31,8 @@ import {
   GameType, 
   StrategyType, 
   PlayerBehavior, 
-  Player 
+  Player,
+  GameScenario
 } from "@/lib/game-theory-types"
 import { Play, BarChart3, Settings, Trophy, TrendingUp, GraduationCap, Zap, Bot, Wrench, Sparkles, Target, Library, HelpCircle, BookOpen, Users, ArrowRight, Clock } from "lucide-react"
 import { LoadingSpinner, SimulationLoader, LoadingOverlay } from "@/components/ui/loading-spinner"
@@ -200,20 +201,90 @@ export default function GameTheorySimulator() {
   const handleGameSelect = (game: UIGameScenario) => {
     try {
       setSelectedGame(game)
-      // Use the payoff matrix directly from the UI game scenario
-      const matrix = game.payoffMatrix || []
+      
+      // Ensure the payoff matrix is properly structured
+      let matrix = game.payoffMatrix || []
+      
+      // Debug logging
+      console.log('Game selected:', game.name)
+      console.log('Original payoff matrix:', matrix)
+      console.log('Expected dimensions:', game.strategies.length, 'x', game.strategies.length, 'x', game.playerCount)
+      
+      // Validate and fix matrix structure if needed
+      if (!matrix || matrix.length === 0) {
+        console.warn('Empty payoff matrix, initializing default matrix...')
+        // Initialize with default values (all zeros)
+        matrix = Array(game.strategies.length).fill(null).map(() =>
+          Array(game.strategies.length).fill(null).map(() =>
+            Array(game.playerCount).fill(0)
+          )
+        )
+      } else {
+        // Validate existing matrix structure
+        let needsRestructure = false
+        
+        if (matrix.length !== game.strategies.length) {
+          console.warn(`Matrix row count mismatch: expected ${game.strategies.length}, got ${matrix.length}`)
+          needsRestructure = true
+        }
+        
+        for (let i = 0; i < matrix.length && !needsRestructure; i++) {
+          if (!matrix[i] || matrix[i].length !== game.strategies.length) {
+            console.warn(`Matrix column count mismatch at row ${i}: expected ${game.strategies.length}, got ${matrix[i]?.length}`)
+            needsRestructure = true
+            break
+          }
+          
+          for (let j = 0; j < matrix[i].length && !needsRestructure; j++) {
+            if (!matrix[i][j] || matrix[i][j].length !== game.playerCount) {
+              console.warn(`Matrix player count mismatch at [${i}][${j}]: expected ${game.playerCount}, got ${matrix[i][j]?.length}`)
+              needsRestructure = true
+              break
+            }
+            
+            // Check for valid numeric values
+            for (let p = 0; p < game.playerCount; p++) {
+              if (typeof matrix[i][j][p] !== 'number' || isNaN(matrix[i][j][p])) {
+                console.warn(`Invalid payoff value at [${i}][${j}][${p}]:`, matrix[i][j][p])
+                matrix[i][j][p] = 0 // Fix invalid values
+              }
+            }
+          }
+        }
+        
+        if (needsRestructure) {
+          console.warn('Matrix structure invalid, recreating...')
+          // Preserve existing values where possible
+          const newMatrix = Array(game.strategies.length).fill(null).map((_, i) =>
+            Array(game.strategies.length).fill(null).map((_, j) =>
+              Array(game.playerCount).fill(null).map((_, p) => {
+                // Try to preserve existing value, otherwise default to 0
+                try {
+                  return matrix[i]?.[j]?.[p] ?? 0
+                } catch {
+                  return 0
+                }
+              })
+            )
+          )
+          matrix = newMatrix
+        }
+      }
+      
+      console.log('Final payoff matrix:', matrix)
       setPayoffMatrix(matrix)
       
       // Update player count to match the game
       setPlayerCount(game.playerCount)
       
-      setSimulationParams((prev) => ({
-        ...prev,
+      // Update simulation parameters
+      setLegacyParams({
         playerStrategies: new Array(game.playerCount).fill("mixed"),
         mixedStrategies: new Array(game.playerCount)
           .fill(null)
           .map(() => new Array(game.strategies.length).fill(1 / game.strategies.length)),
-      }))
+      })
+      
       setResults(null)
       setShowWelcome(false)
     } catch (error) {
