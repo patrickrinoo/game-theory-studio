@@ -3196,12 +3196,43 @@ export class MonteCarloEngine {
       throw new Error('Invalid payoff matrix')
     }
 
-    if (playerStrategies && playerStrategies.length !== game.payoffMatrix.players) {
-      throw new Error('Number of player strategies must match number of players')
+    // Get the actual player count - use the larger of the two to be safe
+    const actualPlayerCount = Math.max(
+      game.payoffMatrix?.players || 0,
+      payoffMatrix.length > 0 ? payoffMatrix[0].length > 0 ? payoffMatrix[0][0].length : 0 : 0
+    )
+
+    if (playerStrategies && playerStrategies.length !== actualPlayerCount) {
+      console.warn(`Player strategies count (${playerStrategies.length}) doesn't match expected player count (${actualPlayerCount}). Adjusting...`)
+      
+      // Auto-adjust strategies to match player count
+      if (playerStrategies.length < actualPlayerCount) {
+        // Pad with default strategy
+        const defaultStrategy = playerStrategies[0] || 'mixed'
+        while (playerStrategies.length < actualPlayerCount) {
+          playerStrategies.push(defaultStrategy)
+        }
+      } else {
+        // Truncate to match
+        playerStrategies.splice(actualPlayerCount)
+      }
     }
 
-    if (mixedStrategies && mixedStrategies.length !== game.payoffMatrix.players) {
-      throw new Error('Number of mixed strategies must match number of players')
+    if (mixedStrategies && mixedStrategies.length !== actualPlayerCount) {
+      console.warn(`Mixed strategies count (${mixedStrategies.length}) doesn't match expected player count (${actualPlayerCount}). Adjusting...`)
+      
+      // Auto-adjust mixed strategies to match player count
+      if (mixedStrategies.length < actualPlayerCount) {
+        // Pad with uniform distribution
+        const strategyCount = payoffMatrix.length
+        const uniformStrategy = new Array(strategyCount).fill(1 / strategyCount)
+        while (mixedStrategies.length < actualPlayerCount) {
+          mixedStrategies.push([...uniformStrategy])
+        }
+      } else {
+        // Truncate to match
+        mixedStrategies.splice(actualPlayerCount)
+      }
     }
 
     // Configure RNG if specified
@@ -3218,9 +3249,9 @@ export class MonteCarloEngine {
     const outcomes: { [key: string]: number } = {}
     const strategyFrequencies: { [key: string]: number } = {}
     const convergenceData: Array<{ iteration: number; strategies: number[] }> = []
-    const playerPayoffs: number[][] = Array(game.payoffMatrix.players)
-      .fill(0)
-      .map(() => [])
+          const playerPayoffs: number[][] = Array(actualPlayerCount)
+        .fill(0)
+        .map(() => [])
     const opponentHistories: Map<string, number[]> = new Map()
 
     // Initialize player histories and opponent tracking
@@ -3278,7 +3309,7 @@ export class MonteCarloEngine {
       // Determine strategies for each player
       const chosenStrategies: number[] = []
 
-              for (let playerIndex = 0; playerIndex < game.payoffMatrix.players; playerIndex++) {
+              for (let playerIndex = 0; playerIndex < actualPlayerCount; playerIndex++) {
         let strategyIndex: number
 
         if (params.players && gameScenario && playerIndex < params.players.length) {
@@ -3291,11 +3322,11 @@ export class MonteCarloEngine {
           )
         } else {
           // Fallback to original strategy selection
-          const playerStrategy = params.playerStrategies[playerIndex]
+          const playerStrategy = params.playerStrategies?.[playerIndex] || 'mixed'
 
           if (playerStrategy === "mixed") {
-            const probabilities =
-              params.mixedStrategies[playerIndex] || new Array(game.strategies.length).fill(1 / game.strategies.length)
+            const probabilities = params.mixedStrategies?.[playerIndex] || 
+              new Array(Math.max(game.strategies?.length || 2, payoffMatrix.length)).fill(1 / Math.max(game.strategies?.length || 2, payoffMatrix.length))
             strategyIndex = this.selectStrategyByProbability(probabilities)
           } else {
             const strategies = game.strategies || game.payoffMatrix?.strategies?.map((s: any) => s.name) || ['Strategy 0', 'Strategy 1']
@@ -3371,7 +3402,7 @@ export class MonteCarloEngine {
             this.playerHistories.set(player.id, history)
 
             // Update opponent histories (simplified for 2-player)
-            if (game.payoffMatrix.players === 2) {
+            if (actualPlayerCount === 2) {
               const opponentIndex = 1 - playerIndex
               const opponentHistory = opponentHistories.get(player.id) || []
               if (opponentIndex < chosenStrategies.length) {
