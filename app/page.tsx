@@ -633,42 +633,42 @@ export default function GameTheorySimulator() {
             </div>
 
             <TabsContent value="setup" className="space-y-6">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <Card className="bg-white/70 backdrop-blur-xl border-white/20 shadow-xl">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Settings className="w-5 h-5 text-blue-500" />
-                      Game Selection
-                    </CardTitle>
-                    <CardDescription>
-                      Choose a game scenario to simulate
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <GameSelector onGameSelect={handleGameSelect} />
-                  </CardContent>
-                </Card>
+              {/* Game Selection - Full Width */}
+              <Card className="bg-white/70 backdrop-blur-xl border-white/20 shadow-xl">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Settings className="w-5 h-5 text-blue-500" />
+                    Game Selection
+                  </CardTitle>
+                  <CardDescription>
+                    Choose a game scenario to simulate
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <GameSelector onGameSelect={handleGameSelect} />
+                </CardContent>
+              </Card>
 
-                <Card className="bg-white/70 backdrop-blur-xl border-white/20 shadow-xl">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Target className="w-5 h-5 text-green-500" />
-                      Game Validation
-                    </CardTitle>
-                    <CardDescription>
-                      Review game configuration and readiness
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <GameValidationPreview 
-                      game={selectedGame} 
-                      payoffMatrix={payoffMatrix}
-                      players={players}
-                      onValidationChange={setIsGameValid}
-                    />
-                  </CardContent>
-                </Card>
-              </div>
+              {/* Game Validation - Full Width Below Game Selection */}
+              <Card className="bg-white/70 backdrop-blur-xl border-white/20 shadow-xl">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Target className="w-5 h-5 text-green-500" />
+                    Game Validation
+                  </CardTitle>
+                  <CardDescription>
+                    Review game configuration and readiness
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <GameValidationPreview 
+                    game={selectedGame} 
+                    payoffMatrix={payoffMatrix}
+                    players={players}
+                    onValidationChange={setIsGameValid}
+                  />
+                </CardContent>
+              </Card>
 
               {selectedGame && (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
