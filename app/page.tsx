@@ -27,12 +27,11 @@ import { CustomGameBuilder } from "@/components/custom-game-builder"
 import { TestChart } from "@/components/charts/test-chart"
 import { MonteCarloEngine } from "@/lib/monte-carlo-engine"
 import { GameTheoryUtils } from "@/lib/game-theory-utils"
-import type { 
-  SimulationParameters as SimulationParametersType, 
-  GameScenario, 
+import { 
   GameType, 
   StrategyType, 
-  PlayerBehavior 
+  PlayerBehavior, 
+  Player 
 } from "@/lib/game-theory-types"
 import { Play, BarChart3, Settings, Trophy, TrendingUp, GraduationCap, Zap, Bot, Wrench, Sparkles, Target, Library, HelpCircle, BookOpen, Users, ArrowRight, Clock } from "lucide-react"
 import { LoadingSpinner, SimulationLoader, LoadingOverlay } from "@/components/ui/loading-spinner"
@@ -81,7 +80,7 @@ export default function GameTheorySimulator() {
   const [players, setPlayers] = useState<PlayerConfig[]>([])
   const [playerCount, setPlayerCount] = useState(2)
   const [isGameValid, setIsGameValid] = useState(false)
-  const [simulationParams, setSimulationParams] = useState<SimulationParametersType>({
+  const [simulationParams, setSimulationParams] = useState({
     iterations: 10000,
     seed: undefined,
     convergenceCriteria: {
@@ -221,6 +220,25 @@ export default function GameTheorySimulator() {
       console.error('Error selecting game:', error)
       alert('Failed to select game. Please try again.')
     }
+  }
+
+  // Convert PlayerConfig to Player for simulation engine
+  const convertPlayersToGameTheoryType = (playerConfigs: PlayerConfig[]): Player[] => {
+    return playerConfigs.map((config, index) => ({
+      id: config.id,
+      name: config.name,
+      strategyType: config.strategy.type === 'pure' ? StrategyType.PURE : 
+                   config.strategy.type === 'mixed' ? StrategyType.MIXED : 
+                   StrategyType.ADAPTIVE,
+      behavior: config.behavior === 'rational' ? PlayerBehavior.RATIONAL :
+               config.behavior === 'aggressive' ? PlayerBehavior.AGGRESSIVE :
+               config.behavior === 'cooperative' ? PlayerBehavior.COOPERATIVE :
+               config.behavior === 'random' ? PlayerBehavior.RANDOM :
+               PlayerBehavior.RATIONAL,
+      pureStrategy: config.strategy.type === 'pure' ? config.strategy.purStrategy : undefined,
+      mixedStrategy: config.strategy.type === 'mixed' ? config.strategy.mixedProbabilities : undefined,
+      color: config.color
+    }))
   }
 
   const runSimulation = async () => {
@@ -765,13 +783,35 @@ export default function GameTheorySimulator() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <SimulationControls 
-                      onRun={runSimulation} 
-                      isRunning={isSimulating} 
-                      progress={simulationProgress} 
-                      disabled={!selectedGame || !isGameValid} 
-                      gameValid={isGameValid}
-                    />
+                    {selectedGame ? (
+                      <SimulationControls 
+                        gameScenario={convertToGameScenario(selectedGame)}
+                        players={convertPlayersToGameTheoryType(players)}
+                        payoffMatrix={payoffMatrix}
+                        parameters={{
+                          ...simulationParams,
+                          convergenceCriteria: {
+                            ...simulationParams.convergenceCriteria,
+                            metric: 'strategy_frequency' as const
+                          }
+                        }}
+                        onResultsUpdate={(results: any) => {
+                          setResults(results)
+                          setIsSimulating(false)
+                        }}
+                        onProgressUpdate={(progress: number) => {
+                          setSimulationProgress(progress)
+                        }}
+                        onStatusChange={(status: any) => {
+                          setIsSimulating(status === 'running')
+                        }}
+                      />
+                    ) : (
+                      <div className="text-center py-8 text-gray-500">
+                        <Play className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                        <p>Select a game scenario to configure simulation</p>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </div>
