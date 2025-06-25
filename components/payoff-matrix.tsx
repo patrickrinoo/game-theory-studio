@@ -161,7 +161,7 @@ export function PayoffMatrix({ game, matrix, onMatrixChange }: PayoffMatrixProps
 
   // Perform strategic analysis
   const analyzeStrategies = (): StrategicAnalysis => {
-    if (!matrix || matrix.length === 0) {
+    if (!matrix || matrix.length === 0 || !matrix[0] || matrix[0].length === 0) {
       return {
         nashEquilibria: [],
         dominantStrategies: [],
@@ -172,21 +172,32 @@ export function PayoffMatrix({ game, matrix, onMatrixChange }: PayoffMatrixProps
     }
 
     try {
-      const nashEquilibria = utils.findNashEquilibrium([matrix], game.strategies) || []
-      const dominantStrategies = utils.findDominantStrategies([matrix], game.strategies) || []
+      // matrix is number[][][], matrix[0] is number[][], matrix[0][row][col] is [p1_payoff, p2_payoff]
+      const nashEquilibria = utils.findNashEquilibrium(matrix, game.strategies) || []
+      const dominantStrategies = utils.findDominantStrategies(matrix, game.strategies) || []
       
-      // Find Pareto optimal outcomes
+      // Find Pareto optimal outcomes with proper null checks
       const pareto: { row: number; col: number; payoffs: number[] }[] = []
       for (let i = 0; i < matrixSize; i++) {
         for (let j = 0; j < matrixSize; j++) {
-          const currentPayoffs = matrix[i][j]
+          // Check if the cell exists and has valid payoffs
+          const currentPayoffs = matrix[0]?.[i]?.[j]
+          if (!currentPayoffs || !Array.isArray(currentPayoffs) || currentPayoffs.length < 2) {
+            continue;
+          }
+          
           let isPareto = true
           
           // Check if any other outcome dominates this one
           for (let x = 0; x < matrixSize && isPareto; x++) {
             for (let y = 0; y < matrixSize && isPareto; y++) {
               if (x === i && y === j) continue
-              const otherPayoffs = matrix[x][y]
+              
+              const otherPayoffs = matrix[0]?.[x]?.[y]
+              if (!otherPayoffs || !Array.isArray(otherPayoffs) || otherPayoffs.length < 2) {
+                continue;
+              }
+              
               if (otherPayoffs[0] >= currentPayoffs[0] && otherPayoffs[1] >= currentPayoffs[1] &&
                   (otherPayoffs[0] > currentPayoffs[0] || otherPayoffs[1] > currentPayoffs[1])) {
                 isPareto = false
@@ -195,27 +206,41 @@ export function PayoffMatrix({ game, matrix, onMatrixChange }: PayoffMatrixProps
           }
           
           if (isPareto) {
-            pareto.push({ row: i, col: j, payoffs: currentPayoffs })
+            pareto.push({ row: i, col: j, payoffs: [...currentPayoffs] })
           }
         }
       }
 
-      // Check if zero-sum
+      // Check if zero-sum with proper null checks
       let zeroSum = true
       for (let i = 0; i < matrixSize && zeroSum; i++) {
         for (let j = 0; j < matrixSize && zeroSum; j++) {
-          if (Math.abs(matrix[i][j][0] + matrix[i][j][1]) > 0.001) {
+          const payoffs = matrix[0]?.[i]?.[j]
+          if (!payoffs || !Array.isArray(payoffs) || payoffs.length < 2) {
+            zeroSum = false
+            continue
+          }
+          
+          if (Math.abs(payoffs[0] + payoffs[1]) > 0.001) {
             zeroSum = false
           }
         }
       }
 
-      // Check symmetry
+      // Check symmetry with proper null checks
       let symmetry = true
       for (let i = 0; i < matrixSize && symmetry; i++) {
         for (let j = 0; j < matrixSize && symmetry; j++) {
-          if (matrix[i][j][0] !== matrix[j][i][1] || 
-              matrix[i][j][1] !== matrix[j][i][0]) {
+          const cell1 = matrix[0]?.[i]?.[j]
+          const cell2 = matrix[0]?.[j]?.[i]
+          
+          if (!cell1 || !cell2 || !Array.isArray(cell1) || !Array.isArray(cell2) ||
+              cell1.length < 2 || cell2.length < 2) {
+            symmetry = false
+            continue
+          }
+          
+          if (cell1[0] !== cell2[1] || cell1[1] !== cell2[0]) {
             symmetry = false
           }
         }
@@ -229,7 +254,7 @@ export function PayoffMatrix({ game, matrix, onMatrixChange }: PayoffMatrixProps
         symmetry
       }
     } catch (error) {
-      console.error('Analysis error:', error)
+      console.error('Strategic analysis error:', error)
       return {
         nashEquilibria: [],
         dominantStrategies: [],
