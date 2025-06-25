@@ -27,7 +27,7 @@ import { TestChart } from "@/components/charts/test-chart"
 import { MonteCarloEngine } from "@/lib/monte-carlo-engine"
 import { GameTheoryUtils } from "@/lib/game-theory-utils"
 import { GameScenario, GameType, StrategyType, PlayerBehavior } from "@/lib/game-theory-types"
-import { Play, BarChart3, Settings, Trophy, TrendingUp, GraduationCap, Zap, Bot, Wrench, Sparkles, Target, Library, HelpCircle, BookOpen } from "lucide-react"
+import { Play, BarChart3, Settings, Trophy, TrendingUp, GraduationCap, Zap, Bot, Wrench, Sparkles, Target, Library, HelpCircle, BookOpen, Users } from "lucide-react"
 import { LoadingSpinner, SimulationLoader, LoadingOverlay } from "@/components/ui/loading-spinner"
 import { ErrorBoundary, ErrorDisplay } from "@/components/ui/error-boundary"
 import { ResponsiveContainer, ResponsiveGrid, ResponsiveButtonStack } from "@/components/ui/responsive-layout"
@@ -595,393 +595,393 @@ export default function GameTheorySimulator() {
             </div>
 
             <TabsContent value="setup" className="space-y-6">
-              <ErrorBoundary>
-                <div className="space-y-6">
-                  <GameSelector onGameSelect={handleGameSelect} selectedGame={selectedGame} />
-                  
-                  {selectedGame && (
-                    <ResponsiveGrid cols={{ sm: 1, lg: 3 }} gap={6}>
-                      <div className="lg:col-span-2 space-y-6">
-                        <ErrorBoundary>
-                          <PayoffMatrix
-                            game={selectedGame}
-                            matrix={payoffMatrix}
-                            onChange={setPayoffMatrix}
-                            playerCount={playerCount}
-                          />
-                        </ErrorBoundary>
-                        
-                        <ErrorBoundary>
-                          <PlayerConfiguration
-                            players={players}
-                            onChange={setPlayers}
-                            playerCount={playerCount}
-                            strategies={selectedGame.strategies}
-                            onPlayerCountChange={setPlayerCount}
-                            gameType={selectedGame.name}
-                          />
-                        </ErrorBoundary>
-                      </div>
-
-                      <div className="space-y-6">
-                        <ErrorBoundary>
-                          <GameValidationPreview
-                            game={selectedGame}
-                            payoffMatrix={payoffMatrix}
-                            players={players}
-                            onValidationChange={setIsGameValid}
-                          />
-                        </ErrorBoundary>
-                        
-                        <ErrorBoundary>
-                          <ConfigManager
-                            currentConfig={{
-                              game: selectedGame,
-                              payoffMatrix,
-                              players,
-                              simulationParams
-                            }}
-                            onConfigLoad={(config) => {
-                              if (config.game) setSelectedGame(config.game)
-                              if (config.payoffMatrix) setPayoffMatrix(config.payoffMatrix)
-                              if (config.players) setPlayers(config.players)
-                              if (config.simulationParams) setSimulationParams(config.simulationParams)
-                            }}
-                          />
-                        </ErrorBoundary>
-                      </div>
-                    </ResponsiveGrid>
-                  )}
-
-                  {!selectedGame && (
-                    <Card className="bg-white/70 backdrop-blur-xl border-white/20 shadow-xl">
-                      <CardContent className="py-16">
-                        <div className="text-center">
-                          <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                            <Settings className="w-8 h-8 text-gray-400" />
-                          </div>
-                          <h3 className="text-lg font-semibold text-gray-900 mb-2">Select a Game to Begin</h3>
-                          <p className="text-gray-600">Choose from our collection of classic game theory scenarios to start your simulation.</p>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )}
-                </div>
-              </ErrorBoundary>
-            </TabsContent>
-
-            <TabsContent value="simulate" className="space-y-6">
-              <ErrorBoundary>
-                {selectedGame && isGameValid ? (
-                  <div className="space-y-6">
-                    <SimulationParameters
-                      parameters={simulationParams}
-                      onChange={setSimulationParams}
-                      gameStrategies={selectedGame.strategies}
-                    />
-                    
-                    <SimulationControls
-                      onRun={runSimulation}
-                      isRunning={isSimulating}
-                      progress={simulationProgress}
-                      disabled={!isGameValid}
-                      gameValid={isGameValid}
-                    />
-                  </div>
-                ) : (
-                  <Card className="bg-white/70 backdrop-blur-xl border-white/20 shadow-xl">
-                    <CardContent className="py-16">
-                      <div className="text-center">
-                        <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                          <Play className="w-8 h-8 text-gray-400" />
-                        </div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                          {!selectedGame ? "No Game Selected" : "Game Configuration Invalid"}
-                        </h3>
-                        <p className="text-gray-600">
-                          {!selectedGame 
-                            ? "Please select and configure a game in the Setup tab before running simulations."
-                            : "Please review your game configuration in the Setup tab to resolve validation issues."
-                          }
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-              </ErrorBoundary>
-            </TabsContent>
-
-            <TabsContent value="results" className="space-y-6">
-              {results && selectedGame ? (
-                <div className="space-y-6">
-                  {/* Strategic Analysis Dashboard - Primary Analysis Interface */}
-                  <Card className="bg-white/70 backdrop-blur-xl border-white/20 shadow-xl">
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Sparkles className="w-5 h-5 text-primary" />
-                        Strategic Analysis Dashboard
-                      </CardTitle>
-                      <p className="text-sm text-muted-foreground">
-                        Comprehensive strategic analysis with dominance, equilibrium, and mixed strategy tools
-                      </p>
-                    </CardHeader>
-                    <CardContent>
-                      <StrategicAnalysisDashboard
-                        simulationResults={results}
-                        game={convertToGameScenario(selectedGame)}
-                        payoffMatrix={selectedGame.payoffMatrix}
-                        onAnalysisUpdate={(analysis) => {
-                          console.log('Strategic analysis updated:', analysis);
-                        }}
-                      />
-                    </CardContent>
-                  </Card>
-
-                  {/* Enhanced Visualization Option */}
-                  <Card className="bg-white/70 backdrop-blur-xl border-white/20 shadow-xl">
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Sparkles className="w-5 h-5 text-blue-500" />
-                        Advanced Analysis Dashboard
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <VisualizationDashboard
-                        simulationData={{
-                          strategyEvolution: {
-                            // Convert convergence data to strategy evolution format
-                            series: [{
-                              name: 'Strategy Evolution',
-                              data: results.convergenceData.map(point => ({
-                                x: point.iteration,
-                                y: point.strategies,
-                                timestamp: Date.now()
-                              }))
-                            }]
-                          },
-                          payoffDistribution: {
-                            // Create payoff distribution from results
-                            bins: results.expectedPayoffs.map((payoff, index) => ({
-                              range: `Player ${index + 1}`,
-                              frequency: 1,
-                              value: payoff,
-                              cumulative: payoff
-                            })),
-                            statistics: {
-                              mean: results.expectedPayoffs.reduce((a, b) => a + b, 0) / results.expectedPayoffs.length,
-                              median: results.expectedPayoffs[Math.floor(results.expectedPayoffs.length / 2)],
-                              std: Math.sqrt(results.expectedPayoffs.reduce((sum, val) => sum + Math.pow(val - (results.expectedPayoffs.reduce((a, b) => a + b, 0) / results.expectedPayoffs.length), 2), 0) / results.expectedPayoffs.length)
-                            }
-                          },
-                          nashEquilibrium: {
-                            // Create basic strategy space data
-                            points: results.nashEquilibrium ? [{
-                              x: 0.5,
-                              y: 0.5,
-                              type: 'equilibrium',
-                              label: 'Nash Equilibrium',
-                              strategies: results.nashEquilibrium.strategies,
-                              payoffs: results.nashEquilibrium.payoffs
-                            }] : [],
-                            regions: []
-                          },
-                          performance: {
-                            metrics: {
-                              iterations: results.iterations,
-                              convergence: 0.95,
-                              efficiency: 0.85,
-                              memory: 45
-                            },
-                            timeline: results.convergenceData.map(point => ({
-                              timestamp: Date.now() - (results.iterations - point.iteration) * 100,
-                              iterations: point.iteration,
-                              convergence: point.iteration / results.iterations,
-                              efficiency: 0.85,
-                              memory: 45
-                            }))
-                          }
-                        }}
-                        scenario={undefined}
-                        isSimulationRunning={isSimulating}
-                        onSimulationControl={(action) => {
-                          console.log('Simulation control:', action);
-                        }}
-                        className="mt-4"
-                      />
-                    </CardContent>
-                  </Card>
-                  
-                  {/* Traditional Results Visualization */}
-                  <Card className="bg-white/70 backdrop-blur-xl border-white/20 shadow-xl">
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <BarChart3 className="w-5 h-5 text-gray-500" />
-                        Traditional Results Analysis
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <ResultsVisualization results={results} game={selectedGame} />
-                    </CardContent>
-                  </Card>
-                </div>
-              ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <Card className="bg-white/70 backdrop-blur-xl border-white/20 shadow-xl">
-                  <CardContent className="text-center py-12">
-                    <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                      <BarChart3 className="w-8 h-8 text-gray-400" />
-                    </div>
-                    <p className="text-gray-600">Run a simulation to view detailed results and analysis.</p>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Settings className="w-5 h-5 text-blue-500" />
+                      Game Selection
+                    </CardTitle>
+                    <CardDescription>
+                      Choose a game scenario to simulate
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <GameSelector onGameSelect={handleGameSelect} />
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-white/70 backdrop-blur-xl border-white/20 shadow-xl">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Target className="w-5 h-5 text-green-500" />
+                      Game Validation
+                    </CardTitle>
+                    <CardDescription>
+                      Review game configuration and readiness
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <GameValidationPreview 
+                      game={selectedGame} 
+                      payoffMatrix={payoffMatrix}
+                      players={players}
+                      onValidationChange={setIsGameValid}
+                    />
+                  </CardContent>
+                </Card>
+              </div>
+
+              {selectedGame && (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <Card className="bg-white/70 backdrop-blur-xl border-white/20 shadow-xl">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Trophy className="w-5 h-5 text-orange-500" />
+                        Payoff Matrix
+                      </CardTitle>
+                      <CardDescription>
+                        Configure rewards and penalties for each strategy combination
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <PayoffMatrix 
+                        game={selectedGame} 
+                        matrix={payoffMatrix} 
+                        onMatrixChange={setPayoffMatrix} 
+                      />
+                    </CardContent>
+                  </Card>
+
+                  <Card className="bg-white/70 backdrop-blur-xl border-white/20 shadow-xl">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Users className="w-5 h-5 text-purple-500" />
+                        Player Configuration
+                      </CardTitle>
+                      <CardDescription>
+                        Set up player behaviors and strategies
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <PlayerConfiguration 
+                        players={players} 
+                        onPlayersChange={setPlayers} 
+                        playerCount={playerCount} 
+                        strategies={selectedGame.strategies} 
+                        onPlayerCountChange={setPlayerCount} 
+                        gameType={selectedGame.category} 
+                      />
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+
+              {selectedGame && (
+                <Card className="bg-white/70 backdrop-blur-xl border-white/20 shadow-xl">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Zap className="w-5 h-5 text-yellow-500" />
+                      Configuration Management
+                    </CardTitle>
+                    <CardDescription>
+                      Save, load, and manage your game configurations
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <ConfigManager 
+                      currentConfig={{
+                        game: selectedGame,
+                        payoffMatrix,
+                        players,
+                        simulationParams
+                      }}
+                      onConfigLoad={(config: any) => {
+                        if (config.game) handleGameSelect(config.game)
+                        if (config.payoffMatrix) setPayoffMatrix(config.payoffMatrix)
+                        if (config.players) setPlayers(config.players)
+                        if (config.simulationParams) setSimulationParams(config.simulationParams)
+                      }}
+                    />
                   </CardContent>
                 </Card>
               )}
             </TabsContent>
 
+            <TabsContent value="simulate" className="space-y-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <Card className="bg-white/70 backdrop-blur-xl border-white/20 shadow-xl">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Settings className="w-5 h-5 text-blue-500" />
+                      Simulation Parameters
+                    </CardTitle>
+                    <CardDescription>
+                      Configure Monte Carlo simulation settings
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <SimulationParameters 
+                      params={{
+                        ...simulationParams,
+                        batchSize: 1000,
+                        useWebWorkers: false,
+                        trackHistory: true,
+                        progressUpdateInterval: 100
+                      }}
+                      onChange={setSimulationParams}
+                    />
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-white/70 backdrop-blur-xl border-white/20 shadow-xl">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Play className="w-5 h-5 text-green-500" />
+                      Simulation Controls
+                    </CardTitle>
+                    <CardDescription>
+                      Run and monitor your Monte Carlo simulation
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <SimulationControls 
+                      onRun={runSimulation} 
+                      isRunning={isSimulating} 
+                      progress={simulationProgress} 
+                      disabled={!selectedGame || !isGameValid} 
+                      gameValid={isGameValid}
+                    />
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="results" className="space-y-6">
+              {results && selectedGame ? (
+                <div className="space-y-6">
+                  <Card className="bg-white/70 backdrop-blur-xl border-white/20 shadow-xl">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <BarChart3 className="w-5 h-5 text-green-500" />
+                        Simulation Results
+                      </CardTitle>
+                      <CardDescription>
+                        View and analyze Monte Carlo simulation outcomes
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <ResultsVisualization results={results} game={selectedGame} />
+                    </CardContent>
+                  </Card>
+                  
+                  <VisualizationDashboard results={results} game={selectedGame} />
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <BarChart3 className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">No Results Yet</h3>
+                  <p className="text-gray-600">Run a simulation to see results and visualizations</p>
+                </div>
+              )}
+            </TabsContent>
+
             <TabsContent value="tournament" className="space-y-6">
-              <TournamentMode selectedGame={selectedGame} />
+              <TournamentMode 
+                scenarios={selectedGame ? [selectedGame] : []} 
+                onTournamentComplete={(results: any) => {
+                  console.log('Tournament completed:', results)
+                }}
+              />
             </TabsContent>
 
             <TabsContent value="evolution" className="space-y-6">
-              <EvolutionaryDynamics selectedGame={selectedGame} />
+              <EvolutionaryDynamics 
+                game={selectedGame} 
+                onEvolutionComplete={(results: any) => {
+                  console.log('Evolution completed:', results)
+                }}
+              />
             </TabsContent>
 
             <TabsContent value="learning" className="space-y-6">
-              <LearningMode onGameSelect={handleGameSelect} />
+              <LearningMode 
+                currentGame={selectedGame}
+                onProgressUpdate={(progress: any) => {
+                  console.log('Learning progress:', progress)
+                }}
+              />
             </TabsContent>
 
             <TabsContent value="ai" className="space-y-6">
-              <AIOpponent selectedGame={selectedGame} />
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <Card className="bg-white/70 backdrop-blur-xl border-white/20 shadow-xl">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Bot className="w-5 h-5 text-blue-500" />
+                      AI Opponent
+                    </CardTitle>
+                    <CardDescription>
+                      Configure AI opponent strategies and behavior
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <AIOpponent 
+                      game={selectedGame}
+                      onAIConfigChange={(config: any) => {
+                        console.log('AI config changed:', config)
+                      }}
+                    />
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-white/70 backdrop-blur-xl border-white/20 shadow-xl">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Target className="w-5 h-5 text-purple-500" />
+                      Strategy Analysis
+                    </CardTitle>
+                    <CardDescription>
+                      Analyze and compare different strategies
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <StrategyComparison 
+                      strategies={selectedGame?.strategies || []}
+                      payoffMatrix={payoffMatrix}
+                    />
+                  </CardContent>
+                </Card>
+              </div>
             </TabsContent>
 
             <TabsContent value="builder" className="space-y-6">
-              <CustomGameBuilder onGameCreated={handleGameSelect} />
+              <CustomGameBuilder 
+                onGameCreated={(game: UIGameScenario) => {
+                  handleGameSelect(game)
+                  setActiveTab('setup')
+                }}
+              />
             </TabsContent>
 
             <TabsContent value="library" className="space-y-6">
               <ScenarioLibraryComponent 
-                onLoadScenario={(scenario: ScenarioLibraryItem) => {
-                  // Convert ScenarioLibraryItem to UIGameScenario
+                onScenarioSelect={(scenario: ScenarioLibraryItem) => {
+                  // Convert scenario to UIGameScenario and select it
                   const uiGame: UIGameScenario = {
                     id: scenario.id,
                     name: scenario.name,
                     description: scenario.description,
-                    playerCount: scenario.payoffMatrix.players,
-                    strategies: scenario.payoffMatrix.strategies.map(s => s.name),
+                    playerCount: scenario.playerCount,
+                    strategies: scenario.strategies,
                     category: scenario.category,
-                    difficulty: scenario.difficulty === 'beginner' ? 'Beginner' : 
-                              scenario.difficulty === 'intermediate' ? 'Intermediate' : 'Advanced',
-                    payoffMatrix: scenario.payoffMatrix.payoffs,
-                    realWorldApplications: scenario.realWorldExample ? [scenario.realWorldExample] : [],
-                    educationalFocus: [],
-                    learningObjectives: [],
+                    difficulty: scenario.difficulty,
+                    payoffMatrix: scenario.payoffMatrix,
+                    realWorldApplications: scenario.realWorldApplications || [],
+                    educationalFocus: scenario.educationalFocus || [],
+                    learningObjectives: scenario.learningObjectives || [],
                     nashEquilibria: [],
                     dominantStrategies: []
                   }
                   handleGameSelect(uiGame)
-                  setActiveTab('setup') // Switch to setup tab after loading
-                }}
-                onCreateNew={() => {
-                  setActiveTab('builder') // Switch to builder tab for creating new scenarios
+                  setActiveTab('setup')
                 }}
               />
             </TabsContent>
 
             <TabsContent value="help" className="space-y-6">
-              <Card className="bg-white/70 backdrop-blur-xl border-white/20 shadow-xl">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <HelpCircle className="w-5 h-5 text-blue-500" />
-                    Help & Educational Resources
-                  </CardTitle>
-                  <CardDescription>
-                    Comprehensive guides, tutorials, and educational content for game theory concepts
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  {/* Tutorial Section */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="text-lg flex items-center gap-2">
-                          <BookOpen className="w-5 h-5" />
-                          Interactive Tutorials
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-sm text-gray-600 mb-4">
-                          Step-by-step guided tutorials to learn game theory concepts and platform features.
-                        </p>
-                        <Button 
-                          onClick={() => tutorialSystem.openTutorial('introduction-to-game-theory')}
-                          className="w-full"
-                        >
-                          Start Learning
-                        </Button>
-                      </CardContent>
-                    </Card>
-
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="text-lg flex items-center gap-2">
-                          <ConceptIcon concept="nash-equilibrium" size="sm" />
-                          Game Theory Concepts
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-3">
-                        <p className="text-sm text-gray-600 mb-3">
-                          Learn key concepts with interactive examples:
-                        </p>
-                        <div className="space-y-2">
-                          <ConceptText concept="nash-equilibrium" className="block text-sm" />
-                          <ConceptText concept="dominant-strategy" className="block text-sm" />
-                          <ConceptText concept="mixed-strategy" className="block text-sm" />
-                          <ConceptText concept="pareto-efficiency" className="block text-sm" />
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-
-                  {/* Platform Guide */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-lg">Platform Guide</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div className="text-center">
-                          <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mx-auto mb-3">
-                            <Settings className="w-6 h-6 text-blue-600" />
-                          </div>
-                          <h4 className="font-medium text-sm mb-2">Setup Games</h4>
-                          <p className="text-xs text-gray-600">Configure payoff matrices, player strategies, and game parameters</p>
-                        </div>
-                        <div className="text-center">
-                          <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mx-auto mb-3">
-                            <Play className="w-6 h-6 text-green-600" />
-                          </div>
-                          <h4 className="font-medium text-sm mb-2">Run Simulations</h4>
-                          <p className="text-xs text-gray-600">Execute Monte Carlo simulations with customizable parameters</p>
-                        </div>
-                        <div className="text-center">
-                          <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mx-auto mb-3">
-                            <BarChart3 className="w-6 h-6 text-purple-600" />
-                          </div>
-                          <h4 className="font-medium text-sm mb-2">Analyze Results</h4>
-                          <p className="text-xs text-gray-600">Interpret outcomes, find equilibria, and understand strategic dynamics</p>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <Card className="bg-white/70 backdrop-blur-xl border-white/20 shadow-xl">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <BookOpen className="w-5 h-5 text-blue-500" />
+                      Quick Start Guide
+                    </CardTitle>
+                    <CardDescription>
+                      Get started with Game Theory Studio
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="flex items-start gap-3">
+                        <div className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold">1</div>
+                        <div>
+                          <h4 className="font-semibold">Select a Game</h4>
+                          <p className="text-sm text-gray-600">Choose from classic scenarios like Prisoner's Dilemma</p>
                         </div>
                       </div>
-                    </CardContent>
-                  </Card>
+                      <div className="flex items-start gap-3">
+                        <div className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold">2</div>
+                        <div>
+                          <h4 className="font-semibold">Configure Players</h4>
+                          <p className="text-sm text-gray-600">Set up player strategies and behaviors</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <div className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold">3</div>
+                        <div>
+                          <h4 className="font-semibold">Run Simulation</h4>
+                          <p className="text-sm text-gray-600">Execute Monte Carlo simulations to find optimal strategies</p>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
 
-                  {/* Contextual Help Panel */}
-                  <HelpPanel 
-                    gameType={selectedGame?.category as any}
-                    context={activeTab as any}
-                  />
-                </CardContent>
-              </Card>
+                <Card className="bg-white/70 backdrop-blur-xl border-white/20 shadow-xl">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <HelpCircle className="w-5 h-5 text-green-500" />
+                      Interactive Tutorials
+                    </CardTitle>
+                    <CardDescription>
+                      Step-by-step learning experiences
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <Button 
+                        variant="outline" 
+                        className="w-full justify-start"
+                        onClick={() => tutorialSystem.openTutorial('introduction-to-game-theory')}
+                      >
+                        <BookOpen className="w-4 h-4 mr-2" />
+                        Introduction to Game Theory
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        className="w-full justify-start"
+                        onClick={() => tutorialSystem.openTutorial('monte-carlo-methods')}
+                      >
+                        <Target className="w-4 h-4 mr-2" />
+                        Monte Carlo Methods
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        className="w-full justify-start"
+                        onClick={() => tutorialSystem.openTutorial('nash-equilibrium')}
+                      >
+                        <Trophy className="w-4 h-4 mr-2" />
+                        Nash Equilibrium
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
             </TabsContent>
           </Tabs>
         </ResponsiveContainer>
+
+        {/* Tutorial System Modal */}
+        {tutorialSystem && tutorialSystem.isOpen && (
+          <div className="fixed inset-0 z-50">
+            <TutorialSystem
+              isOpen={tutorialSystem.isOpen}
+              onClose={() => tutorialSystem.closeTutorial()}
+              tutorialId={tutorialSystem.tutorialId}
+            />
+          </div>
+        )}
       </div>
     </ErrorBoundary>
   )
