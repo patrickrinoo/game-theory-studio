@@ -11,10 +11,12 @@ import { PayoffMatrix } from "@/components/payoff-matrix"
 import { PlayerConfiguration, type PlayerConfig } from "@/components/player-configuration"
 import { GameValidationPreview } from "@/components/game-validation-preview"
 import { SimulationControls } from "@/components/simulation-controls"
-import { SimulationParameters } from "@/components/simulation-parameters"
+import { SimulationParameters as SimulationParametersComponent } from "@/components/simulation-parameters"
 import { ConfigManager } from "@/components/config-manager"
 import { ResultsVisualization } from "@/components/results-visualization"
 import { VisualizationDashboard } from "@/components/visualization-dashboard"
+import { UnifiedResultsDashboard } from "@/components/unified-results-dashboard"
+import { StrategicAnalysisDashboard } from "@/components/strategic-analysis-dashboard"
 import { TournamentMode } from "@/components/tournament-mode"
 import { EvolutionaryDynamics } from "@/components/evolutionary-dynamics"
 import { LearningMode } from "@/components/learning-mode"
@@ -22,12 +24,17 @@ import { StrategyComparison } from "@/components/strategy-comparison"
 import { StrategyExperiment } from "@/components/strategy-experiment"
 import { AIOpponent } from "@/components/ai-opponent"
 import { CustomGameBuilder } from "@/components/custom-game-builder"
-import { StrategicAnalysisDashboard } from "@/components/strategic-analysis-dashboard"
 import { TestChart } from "@/components/charts/test-chart"
 import { MonteCarloEngine } from "@/lib/monte-carlo-engine"
 import { GameTheoryUtils } from "@/lib/game-theory-utils"
-import { GameScenario, GameType, StrategyType, PlayerBehavior } from "@/lib/game-theory-types"
-import { Play, BarChart3, Settings, Trophy, TrendingUp, GraduationCap, Zap, Bot, Wrench, Sparkles, Target, Library, HelpCircle, BookOpen, Users } from "lucide-react"
+import type { 
+  SimulationParameters as SimulationParametersType, 
+  GameScenario, 
+  GameType, 
+  StrategyType, 
+  PlayerBehavior 
+} from "@/lib/game-theory-types"
+import { Play, BarChart3, Settings, Trophy, TrendingUp, GraduationCap, Zap, Bot, Wrench, Sparkles, Target, Library, HelpCircle, BookOpen, Users, ArrowRight, Clock } from "lucide-react"
 import { LoadingSpinner, SimulationLoader, LoadingOverlay } from "@/components/ui/loading-spinner"
 import { ErrorBoundary, ErrorDisplay } from "@/components/ui/error-boundary"
 import { ResponsiveContainer, ResponsiveGrid, ResponsiveButtonStack } from "@/components/ui/responsive-layout"
@@ -74,8 +81,21 @@ export default function GameTheorySimulator() {
   const [players, setPlayers] = useState<PlayerConfig[]>([])
   const [playerCount, setPlayerCount] = useState(2)
   const [isGameValid, setIsGameValid] = useState(false)
-  const [simulationParams, setSimulationParams] = useState({
+  const [simulationParams, setSimulationParams] = useState<SimulationParametersType>({
     iterations: 10000,
+    seed: undefined,
+    convergenceCriteria: {
+      enabled: false,
+      tolerance: 0.01,
+      windowSize: 100,
+      metric: 'strategy_frequency'
+    },
+    batchSize: 1000,
+    useWebWorkers: false,
+    trackHistory: true,
+    progressUpdateInterval: 100
+  })
+  const [legacyParams, setLegacyParams] = useState({
     playerStrategies: [] as string[],
     mixedStrategies: [] as number[][],
   })
@@ -721,15 +741,15 @@ export default function GameTheorySimulator() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <SimulationParameters 
-                      params={{
+                    <SimulationParametersComponent 
+                      parameters={{
                         ...simulationParams,
                         batchSize: 1000,
                         useWebWorkers: false,
                         trackHistory: true,
                         progressUpdateInterval: 100
                       }}
-                      onChange={setSimulationParams}
+                      onParametersChange={setSimulationParams}
                     />
                   </CardContent>
                 </Card>
